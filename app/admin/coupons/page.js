@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Ticket } from 'lucide-react';
+import { Plus, Edit, Trash2, Ticket, Zap, Percent, DollarSign, Calendar, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CouponManagementPage() {
@@ -178,67 +178,74 @@ export default function CouponManagementPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-400">Loading coupons...</div>
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-center space-y-4">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-cyan-500 border-r-transparent"></div>
+          <p className="text-gray-400">Loading coupons...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900/10 via-black to-blue-900/10 p-8">
-      <div className="container mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-            Coupon Management
-          </h1>
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto px-4 py-8 lg:px-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-gradient">
+              Coupon Management
+            </h1>
+            <p className="text-gray-400">Create and manage discount codes</p>
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700 glow-purple">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Coupon
+              <Button className="btn-gaming h-12 px-6">
+                <Plus className="mr-2 h-5 w-5" />
+                Create Coupon
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 border-purple-500/30">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black border-white/10">
               <DialogHeader>
-                <DialogTitle className="text-purple-400">
+                <DialogTitle className="text-2xl text-gradient">
                   {editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}
                 </DialogTitle>
                 <DialogDescription className="text-gray-400">
-                  Configure coupon settings
+                  Configure discount code settings
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Coupon Code *</Label>
+                  <Label className="text-white">Coupon Code *</Label>
                   <div className="flex space-x-2">
                     <Input
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500 font-mono"
+                      placeholder="SUMMER2025"
                       required
                     />
                     <Button
                       type="button"
                       onClick={generateCode}
-                      variant="outline"
-                      className="border-purple-500/50 text-purple-400"
+                      className="border-cyan-500/50 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20"
                     >
-                      Generate
+                      <Zap className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Discount Type *</Label>
+                    <Label className="text-white">Discount Type *</Label>
                     <Select
                       value={formData.discount_type}
                       onValueChange={(value) => setFormData({ ...formData, discount_type: value })}
                     >
-                      <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                      <SelectTrigger className="bg-black/50 border-white/10 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -248,25 +255,26 @@ export default function CouponManagementPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Discount Value *</Label>
+                    <Label className="text-white">Discount Value *</Label>
                     <Input
                       type="number"
                       step="0.01"
                       value={formData.discount_value}
                       onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
+                      placeholder={formData.discount_type === 'Percentage' ? '10' : '20'}
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Applicable To *</Label>
+                  <Label className="text-white">Applicable To *</Label>
                   <Select
                     value={formData.applicable_to}
                     onValueChange={(value) => setFormData({ ...formData, applicable_to: value })}
                   >
-                    <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                    <SelectTrigger className="bg-black/50 border-white/10 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -278,12 +286,12 @@ export default function CouponManagementPage() {
 
                 {formData.applicable_to === 'Product Type' && (
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Product Type</Label>
+                    <Label className="text-white">Product Type</Label>
                     <Select
                       value={formData.applicable_product_type}
                       onValueChange={(value) => setFormData({ ...formData, applicable_product_type: value })}
                     >
-                      <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                      <SelectTrigger className="bg-black/50 border-white/10 text-white">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -297,22 +305,22 @@ export default function CouponManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Total Usage Limit *</Label>
+                    <Label className="text-white">Total Usage Limit *</Label>
                     <Input
                       type="number"
                       value={formData.usage_limit}
                       onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Per User Limit *</Label>
+                    <Label className="text-white">Per User Limit *</Label>
                     <Input
                       type="number"
                       value={formData.per_user_limit}
                       onChange={(e) => setFormData({ ...formData, per_user_limit: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
@@ -320,39 +328,39 @@ export default function CouponManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Min Order Value ($)</Label>
+                    <Label className="text-white">Min Order Value ($)</Label>
                     <Input
                       type="number"
                       step="0.01"
                       value={formData.min_order_value}
                       onChange={(e) => setFormData({ ...formData, min_order_value: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Expiry Date *</Label>
+                    <Label className="text-white">Expiry Date *</Label>
                     <Input
                       type="date"
                       value={formData.expiry_date}
                       onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 p-3 glass-card rounded-lg">
                   <input
                     type="checkbox"
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="h-4 w-4"
+                    className="h-4 w-4 rounded border-white/20 bg-black/50"
                   />
-                  <Label htmlFor="is_active" className="text-gray-300">Coupon is Active</Label>
+                  <Label htmlFor="is_active" className="text-white cursor-pointer">Coupon is Active</Label>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4">
+                <div className="flex justify-end space-x-2 pt-4 border-t border-white/10">
                   <Button
                     type="button"
                     variant="outline"
@@ -360,11 +368,11 @@ export default function CouponManagementPage() {
                       setIsDialogOpen(false);
                       resetForm();
                     }}
-                    className="border-gray-600 text-gray-300"
+                    className="border-white/10 text-white hover:bg-white/5"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-purple-600 hover:bg-purple-700 glow-purple">
+                  <Button type="submit" className="btn-gaming">
                     {editingCoupon ? 'Update' : 'Create'} Coupon
                   </Button>
                 </div>
@@ -373,66 +381,86 @@ export default function CouponManagementPage() {
           </Dialog>
         </div>
 
-        {/* Coupons List */}
+        {/* Coupons Grid */}
         {coupons.length === 0 ? (
-          <Card className="card-gaming">
-            <CardContent className="pt-6 text-center text-gray-400">
-              <Ticket className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <p>No coupons found. Create your first coupon!</p>
+          <Card className="gaming-card">
+            <CardContent className="pt-12 pb-12 text-center">
+              <Ticket className="h-16 w-16 mx-auto mb-4 text-gray-700" />
+              <p className="text-gray-400 text-lg mb-2">No coupons found</p>
+              <p className="text-gray-600 text-sm">Create your first discount code</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="responsive-grid">
             {coupons.map((coupon) => (
-              <Card key={coupon.id} className="card-gaming">
+              <Card key={coupon.id} className="gaming-card">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-2xl text-purple-400 font-mono">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <CardTitle className="text-2xl font-mono text-neon">
                         {coupon.code}
                       </CardTitle>
-                      <CardDescription className="text-gray-400">
-                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '$'} off
+                      <CardDescription className="text-gray-400 text-sm mt-2">
+                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '$'} off • {coupon.applicable_to}
                       </CardDescription>
                     </div>
-                    <Badge className={coupon.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                    <Badge className={coupon.is_active ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-gray-500/20 text-gray-400 border-gray-500/50'}>
                       {coupon.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Applicable:</span>
-                      <span className="text-white">{coupon.applicable_to}</span>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-400">
+                        {coupon.discount_type === 'Percentage' ? (
+                          <Percent className="mr-2 h-4 w-4 text-cyan-400" />
+                        ) : (
+                          <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
+                        )}
+                        Discount
+                      </div>
+                      <span className="text-white font-bold">
+                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '$'}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Usage:</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-400">
+                        <Users className="mr-2 h-4 w-4 text-cyan-400" />
+                        Usage
+                      </div>
                       <span className="text-white">
                         {coupon.times_used}/{coupon.usage_limit}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Per User:</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Per User</span>
                       <span className="text-white">{coupon.per_user_limit}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Min Order:</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-400">
+                        <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
+                        Min Order
+                      </div>
                       <span className="text-white">${coupon.min_order_value || 0}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Expires:</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-400">
+                        <Calendar className="mr-2 h-4 w-4 text-cyan-400" />
+                        Expires
+                      </div>
                       <span className="text-white">
                         {new Date(coupon.expiry_date).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
-                  <div className="mt-4 flex space-x-2">
+
+                  <div className="flex space-x-2 pt-2">
                     <Button
                       onClick={() => handleEdit(coupon)}
                       variant="outline"
                       size="sm"
-                      className="flex-1 border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                      className="flex-1 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
