@@ -96,6 +96,9 @@ export default function RootLayout({ children }) {
           {/* Main Content */}
           <main className="min-h-[calc(100vh-4rem)]">{children}</main>
 
+          {/* Toaster for notifications */}
+          <Toaster position="top-right" richColors />
+
           {/* Footer */}
           <footer className="border-t border-purple-500/20 bg-black/50 py-8">
             <div className="container mx-auto px-4 text-center text-gray-400">
