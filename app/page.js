@@ -31,7 +31,7 @@ export default function HomePage() {
       if (filters.compatibility && filters.compatibility !== 'all') queryParams.append('compatibility', filters.compatibility);
       queryParams.append('is_active', 'true');
 
-      const response = await fetch(`http://localhost:8000/api/products?${queryParams}`);
+      const response = await fetch(`/api/products?${queryParams}`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {
