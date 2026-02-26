@@ -73,28 +73,28 @@ export default function HomePage() {
                 />
               </div>
               <Select
-                value={filters.product_type}
-                onValueChange={(value) => setFilters({ ...filters, product_type: value })}
+                value={filters.product_type || "all"}
+                onValueChange={(value) => setFilters({ ...filters, product_type: value === "all" ? "" : value })}
               >
                 <SelectTrigger className="bg-gray-900 border-purple-500/30 text-white">
                   <SelectValue placeholder="Product Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="Console">Console</SelectItem>
                   <SelectItem value="Accessory">Accessory</SelectItem>
                   <SelectItem value="Game">Game</SelectItem>
                 </SelectContent>
               </Select>
               <Select
-                value={filters.compatibility}
-                onValueChange={(value) => setFilters({ ...filters, compatibility: value })}
+                value={filters.compatibility || "all"}
+                onValueChange={(value) => setFilters({ ...filters, compatibility: value === "all" ? "" : value })}
               >
                 <SelectTrigger className="bg-gray-900 border-purple-500/30 text-white">
                   <SelectValue placeholder="Compatibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Platforms</SelectItem>
+                  <SelectItem value="all">All Platforms</SelectItem>
                   <SelectItem value="PS5">PS5</SelectItem>
                   <SelectItem value="PS4">PS4</SelectItem>
                   <SelectItem value="PS4 & PS5">PS4 & PS5</SelectItem>
