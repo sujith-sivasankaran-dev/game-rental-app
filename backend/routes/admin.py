@@ -41,14 +41,14 @@ async def get_dashboard_metrics(current_admin = Depends(get_current_admin)) -> D
             {"extended_end_date": {"$lte": three_days_later, "$gte": datetime.utcnow()}},
             {"end_date": {"$lte": three_days_later, "$gte": datetime.utcnow()}, "extended_end_date": None}
         ]
-    })
+    }, {"_id": 0})
     upcoming_returns = await upcoming_returns_cursor.to_list(100)
     
     # Low Stock Alerts (stock < 2)
     low_stock_cursor = products_collection.find({
         "available_stock": {"$lt": 2},
         "is_active": True
-    })
+    }, {"_id": 0})
     low_stock_products = await low_stock_cursor.to_list(100)
     
     # Most Rented Product
