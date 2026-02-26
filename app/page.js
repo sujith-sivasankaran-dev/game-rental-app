@@ -27,8 +27,8 @@ export default function HomePage() {
     try {
       const queryParams = new URLSearchParams();
       if (filters.search) queryParams.append('search', filters.search);
-      if (filters.product_type) queryParams.append('product_type', filters.product_type);
-      if (filters.compatibility) queryParams.append('compatibility', filters.compatibility);
+      if (filters.product_type && filters.product_type !== 'all') queryParams.append('product_type', filters.product_type);
+      if (filters.compatibility && filters.compatibility !== 'all') queryParams.append('compatibility', filters.compatibility);
       queryParams.append('is_active', 'true');
 
       const response = await fetch(`http://localhost:8000/api/products?${queryParams}`);
