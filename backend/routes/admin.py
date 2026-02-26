@@ -69,7 +69,7 @@ async def get_dashboard_metrics(current_admin = Depends(get_current_admin)) -> D
             }
     
     # Recent rentals for chart/table
-    recent_rentals_cursor = rentals_collection.find().sort("created_at", -1).limit(10)
+    recent_rentals_cursor = rentals_collection.find({}, {"_id": 0}).sort("created_at", -1).limit(10)
     recent_rentals = await recent_rentals_cursor.to_list(10)
     
     return {
