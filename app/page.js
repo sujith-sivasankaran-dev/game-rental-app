@@ -15,8 +15,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
-    product_type: '',
-    compatibility: '',
+    product_type: 'all',
+    compatibility: 'all',
   });
 
   useEffect(() => {
