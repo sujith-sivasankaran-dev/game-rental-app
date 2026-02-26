@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, DollarSign, Box } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ProductManagementPage() {
@@ -53,7 +53,8 @@ export default function ProductManagementPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products?is_active=');
+      // Fetch all products (both active and inactive)
+      const response = await fetch('/api/products');
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -163,56 +164,63 @@ export default function ProductManagementPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-400">Loading products...</div>
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-center space-y-4">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-cyan-500 border-r-transparent"></div>
+          <p className="text-gray-400">Loading products...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900/10 via-black to-blue-900/10 p-8">
-      <div className="container mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-            Product Management
-          </h1>
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto px-4 py-8 lg:px-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-gradient">
+              Product Management
+            </h1>
+            <p className="text-gray-400">Manage your gaming inventory</p>
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-purple-600 hover:bg-purple-700 glow-purple">
-                <Plus className="mr-2 h-4 w-4" />
+              <Button className="btn-gaming h-12 px-6">
+                <Plus className="mr-2 h-5 w-5" />
                 Add Product
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 border-purple-500/30">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black border-white/10">
               <DialogHeader>
-                <DialogTitle className="text-purple-400">
+                <DialogTitle className="text-2xl text-gradient">
                   {editingProduct ? 'Edit Product' : 'Add New Product'}
                 </DialogTitle>
                 <DialogDescription className="text-gray-400">
                   Fill in the product details below
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Product Name *</Label>
+                    <Label className="text-white">Product Name *</Label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Product Type *</Label>
+                    <Label className="text-white">Product Type *</Label>
                     <Select
                       value={formData.product_type}
                       onValueChange={(value) => setFormData({ ...formData, product_type: value })}
                     >
-                      <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                      <SelectTrigger className="bg-black/50 border-white/10 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -225,11 +233,11 @@ export default function ProductManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300">Description *</Label>
+                  <Label className="text-white">Description *</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="bg-gray-800 border-purple-500/30 text-white"
+                    className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                     rows={3}
                     required
                   />
@@ -237,12 +245,12 @@ export default function ProductManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Compatibility *</Label>
+                    <Label className="text-white">Compatibility *</Label>
                     <Select
                       value={formData.compatibility}
                       onValueChange={(value) => setFormData({ ...formData, compatibility: value })}
                     >
-                      <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                      <SelectTrigger className="bg-black/50 border-white/10 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -255,13 +263,13 @@ export default function ProductManagementPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Rental Price ($/day) *</Label>
+                    <Label className="text-white">Rental Price ($/day) *</Label>
                     <Input
                       type="number"
                       step="0.01"
                       value={formData.rental_price}
                       onChange={(e) => setFormData({ ...formData, rental_price: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
@@ -269,22 +277,22 @@ export default function ProductManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Min Rental Period *</Label>
+                    <Label className="text-white">Min Rental Period *</Label>
                     <Input
                       type="number"
                       value={formData.min_rental_period}
                       onChange={(e) => setFormData({ ...formData, min_rental_period: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Unit</Label>
+                    <Label className="text-white">Unit</Label>
                     <Select
                       value={formData.min_rental_unit}
                       onValueChange={(value) => setFormData({ ...formData, min_rental_unit: value })}
                     >
-                      <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                      <SelectTrigger className="bg-black/50 border-white/10 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -294,12 +302,12 @@ export default function ProductManagementPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Total Stock *</Label>
+                    <Label className="text-white">Total Stock *</Label>
                     <Input
                       type="number"
                       value={formData.total_stock}
                       onChange={(e) => setFormData({ ...formData, total_stock: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                       required
                     />
                   </div>
@@ -307,12 +315,12 @@ export default function ProductManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Extension Rule</Label>
+                    <Label className="text-white">Extension Rule</Label>
                     <Select
                       value={formData.extension_rule}
                       onValueChange={(value) => setFormData({ ...formData, extension_rule: value })}
                     >
-                      <SelectTrigger className="bg-gray-800 border-purple-500/30 text-white">
+                      <SelectTrigger className="bg-black/50 border-white/10 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -323,29 +331,29 @@ export default function ProductManagementPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300">Extension Multiplier</Label>
+                    <Label className="text-white">Extension Multiplier</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={formData.extension_multiplier}
                       onChange={(e) => setFormData({ ...formData, extension_multiplier: e.target.value })}
-                      className="bg-gray-800 border-purple-500/30 text-white"
+                      className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 p-3 glass-card rounded-lg">
                   <input
                     type="checkbox"
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="h-4 w-4"
+                    className="h-4 w-4 rounded border-white/20 bg-black/50"
                   />
-                  <Label htmlFor="is_active" className="text-gray-300">Product is Active</Label>
+                  <Label htmlFor="is_active" className="text-white cursor-pointer">Product is Active</Label>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4">
+                <div className="flex justify-end space-x-2 pt-4 border-t border-white/10">
                   <Button
                     type="button"
                     variant="outline"
@@ -353,11 +361,11 @@ export default function ProductManagementPage() {
                       setIsDialogOpen(false);
                       resetForm();
                     }}
-                    className="border-gray-600 text-gray-300"
+                    className="border-white/10 text-white hover:bg-white/5"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-purple-600 hover:bg-purple-700 glow-purple">
+                  <Button type="submit" className="btn-gaming">
                     {editingProduct ? 'Update' : 'Create'} Product
                   </Button>
                 </div>
@@ -368,55 +376,64 @@ export default function ProductManagementPage() {
 
         {/* Products Grid */}
         {products.length === 0 ? (
-          <Card className="card-gaming">
-            <CardContent className="pt-6 text-center text-gray-400">
-              <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <p>No products found. Add your first product!</p>
+          <Card className="gaming-card">
+            <CardContent className="pt-12 pb-12 text-center">
+              <Package className="h-16 w-16 mx-auto mb-4 text-gray-700" />
+              <p className="text-gray-400 text-lg mb-2">No products found</p>
+              <p className="text-gray-600 text-sm">Add your first product to get started</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="responsive-grid">
             {products.map((product) => (
-              <Card key={product.id} className="card-gaming">
+              <Card key={product.id} className="gaming-card">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <CardTitle className="text-lg text-purple-400">{product.name}</CardTitle>
-                      <CardDescription className="text-gray-400">
-                        {product.product_type} - {product.compatibility}
+                      <CardTitle className="text-white text-lg">{product.name}</CardTitle>
+                      <CardDescription className="text-gray-400 text-sm mt-1">
+                        {product.product_type} • {product.compatibility}
                       </CardDescription>
                     </div>
-                    <Badge className={product.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                    <Badge className={product.is_active ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-gray-500/20 text-gray-400 border-gray-500/50'}>
                       {product.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-400 mb-4 line-clamp-2">{product.description}</p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Price:</span>
-                      <span className="text-purple-400 font-bold">${product.rental_price}/day</span>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-400">
+                        <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
+                        Price
+                      </div>
+                      <span className="text-neon font-bold text-lg">${product.rental_price}/day</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Stock:</span>
-                      <span className="text-white">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-400">
+                        <Box className="mr-2 h-4 w-4 text-cyan-400" />
+                        Stock
+                      </div>
+                      <span className="text-white font-medium">
                         {product.available_stock}/{product.total_stock}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Min Period:</span>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Min Period</span>
                       <span className="text-white">
                         {product.min_rental_period} {product.min_rental_unit}
                       </span>
                     </div>
                   </div>
-                  <div className="mt-4 flex space-x-2">
+
+                  <div className="flex space-x-2 pt-2">
                     <Button
                       onClick={() => handleEdit(product)}
                       variant="outline"
                       size="sm"
-                      className="flex-1 border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                      className="flex-1 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
