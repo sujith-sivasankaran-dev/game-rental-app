@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     CLOUDINARY_CLOUD_NAME: str = "dfnjtq6m3"
-    CLOUDINARY_API_KEY: str = "235337481634764"
-    CLOUDINARY_API_SECRET: str = "QF6PqnIZ-aBgLR4MJZNUtycL5dI"
+    CLOUDINARY_API_KEY: str = "935992396165584"
+    CLOUDINARY_API_SECRET: str = "gCIE5eAdEr1zmo1uxD6CTk3RlkA"
     
     class Config:
         env_file = "../.env"
