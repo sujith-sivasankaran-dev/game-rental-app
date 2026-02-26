@@ -86,7 +86,7 @@ async def get_dashboard_metrics(current_admin = Depends(get_current_admin)) -> D
 @router.get("/users")
 async def list_all_users(current_admin = Depends(get_current_admin)):
     users_collection = db.get_db()["users"]
-    cursor = users_collection.find({}, {"hashed_password": 0}).sort("created_at", -1)
+    cursor = users_collection.find({}, {"hashed_password": 0, "_id": 0}).sort("created_at", -1)
     users = await cursor.to_list(100)
     return users
 
