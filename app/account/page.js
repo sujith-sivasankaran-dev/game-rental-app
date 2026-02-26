@@ -33,7 +33,7 @@ export default function AccountPage() {
     try {
       const response = await fetch('/api/rentals', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
         },
       });
 
@@ -189,7 +189,7 @@ export default function AccountPage() {
                             Total Price
                           </div>
                           <span className="text-white font-bold text-lg">
-                            ${rental.total_price}
+                            ₹{rental.total_price}
                           </span>
                         </div>
                       </div>
@@ -200,7 +200,7 @@ export default function AccountPage() {
                             <span className="text-gray-400">Coupon Applied</span>
                             <div className="text-right">
                               <span className="text-cyan-400 font-mono font-bold block">{rental.coupon_code}</span>
-                              <span className="text-green-400 text-xs">-${rental.discount_amount}</span>
+                              <span className="text-green-400 text-xs">-₹{rental.discount_amount}</span>
                             </div>
                           </div>
                         </div>
@@ -245,9 +245,9 @@ export default function AccountPage() {
                             {rental.status}
                           </Badge>
                           <div className="text-right">
-                            <p className="text-white font-bold text-xl">${rental.total_price}</p>
+                            <p className="text-white font-bold text-xl">₹{rental.total_price}</p>
                             {rental.coupon_code && (
-                              <p className="text-green-400 text-xs">Saved ${rental.discount_amount}</p>
+                              <p className="text-green-400 text-xs">Saved ₹{rental.discount_amount}</p>
                             )}
                           </div>
                         </div>

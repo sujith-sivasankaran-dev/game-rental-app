@@ -77,7 +77,7 @@ export default function ProductManagementPage() {
       });
 
       const url = editingProduct 
-        ? `/api/products/${editingProduct.id}`
+        ? `/api/products/₹{editingProduct.id}`
         : '/api/products';
       
       const method = editingProduct ? 'PUT' : 'POST';
@@ -85,7 +85,7 @@ export default function ProductManagementPage() {
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
         },
         body: formDataToSend,
       });
@@ -127,10 +127,10 @@ export default function ProductManagementPage() {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`/api/products/${productId}`, {
+      const response = await fetch(`/api/products/₹{productId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
         },
       });
 
@@ -263,7 +263,7 @@ export default function ProductManagementPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Rental Price ($/day) *</Label>
+                    <Label className="text-white">Rental Price (₹/day) *</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -409,7 +409,7 @@ export default function ProductManagementPage() {
                         <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
                         Price
                       </div>
-                      <span className="text-neon font-bold text-lg">${product.rental_price}/day</span>
+                      <span className="text-neon font-bold text-lg">₹{product.rental_price}/day</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center text-gray-400">

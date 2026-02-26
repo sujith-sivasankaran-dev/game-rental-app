@@ -31,7 +31,7 @@ export default function HomePage() {
       if (filters.compatibility && filters.compatibility !== 'all') queryParams.append('compatibility', filters.compatibility);
       queryParams.append('is_active', 'true');
 
-      const response = await fetch(`/api/products?${queryParams}`);
+      const response = await fetch(`/api/products?₹{queryParams}`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -188,7 +188,7 @@ export default function HomePage() {
                     {/* Price */}
                     <div className="flex items-baseline justify-between">
                       <div>
-                        <span className="text-3xl font-bold text-neon">${product.rental_price}</span>
+                        <span className="text-3xl font-bold text-neon">₹{product.rental_price}</span>
                         <span className="text-gray-500 text-sm ml-2">/day</span>
                       </div>
                       <div className="text-right">
@@ -201,7 +201,7 @@ export default function HomePage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-400">Availability</span>
                       <div className="flex items-center space-x-2">
-                        <div className={`h-2 w-2 rounded-full ${product.available_stock > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                        <div className={`h-2 w-2 rounded-full ₹{product.available_stock > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                         <span className="text-white font-medium">{product.available_stock} in stock</span>
                       </div>
                     </div>
@@ -209,7 +209,7 @@ export default function HomePage() {
                 </CardContent>
 
                 <CardFooter>
-                  <Link href={`/book/${product.id}`} className="w-full">
+                  <Link href={`/book/₹{product.id}`} className="w-full">
                     <Button className="w-full btn-gaming group-hover:glow-cyan transition-all">
                       <TrendingUp className="mr-2 h-4 w-4" />
                       Rent Now

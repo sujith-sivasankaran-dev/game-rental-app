@@ -53,7 +53,7 @@ export default function CouponManagementPage() {
     try {
       const response = await fetch('/api/coupons', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
         },
       });
 
@@ -83,7 +83,7 @@ export default function CouponManagementPage() {
       };
 
       const url = editingCoupon 
-        ? `/api/coupons/${editingCoupon.id}`
+        ? `/api/coupons/₹{editingCoupon.id}`
         : '/api/coupons';
       
       const method = editingCoupon ? 'PUT' : 'POST';
@@ -91,7 +91,7 @@ export default function CouponManagementPage() {
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend),
@@ -133,10 +133,10 @@ export default function CouponManagementPage() {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`/api/coupons/${couponId}`, {
+      const response = await fetch(`/api/coupons/₹{couponId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
         },
       });
 
@@ -250,7 +250,7 @@ export default function CouponManagementPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Percentage">Percentage (%)</SelectItem>
-                        <SelectItem value="Flat">Flat Amount ($)</SelectItem>
+                        <SelectItem value="Flat">Flat Amount (₹)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -328,7 +328,7 @@ export default function CouponManagementPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-white">Min Order Value ($)</Label>
+                    <Label className="text-white">Min Order Value (₹)</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -401,7 +401,7 @@ export default function CouponManagementPage() {
                         {coupon.code}
                       </CardTitle>
                       <CardDescription className="text-gray-400 text-sm mt-2">
-                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '$'} off • {coupon.applicable_to}
+                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '₹'} off • {coupon.applicable_to}
                       </CardDescription>
                     </div>
                     <Badge className={coupon.is_active ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-gray-500/20 text-gray-400 border-gray-500/50'}>
@@ -421,7 +421,7 @@ export default function CouponManagementPage() {
                         Discount
                       </div>
                       <span className="text-white font-bold">
-                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '$'}
+                        {coupon.discount_value}{coupon.discount_type === 'Percentage' ? '%' : '₹'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
@@ -442,7 +442,7 @@ export default function CouponManagementPage() {
                         <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
                         Min Order
                       </div>
-                      <span className="text-white">${coupon.min_order_value || 0}</span>
+                      <span className="text-white">₹{coupon.min_order_value || 0}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center text-gray-400">

@@ -37,7 +37,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch('/api/admin/dashboard', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ₹{token}`,
         },
       });
 
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">
-                ${metrics?.total_revenue?.toFixed(2) || 0}
+                ₹{metrics?.total_revenue?.toFixed(2) || 0}
               </div>
               <p className="text-xs text-gray-500 mt-1">All time earnings</p>
             </CardContent>
