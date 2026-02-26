@@ -93,6 +93,6 @@ async def list_all_users(current_admin = Depends(get_current_admin)):
 @router.get("/rentals")
 async def list_all_rentals(current_admin = Depends(get_current_admin)):
     rentals_collection = db.get_db()["rentals"]
-    cursor = rentals_collection.find().sort("created_at", -1)
+    cursor = rentals_collection.find({}, {"_id": 0}).sort("created_at", -1)
     rentals = await cursor.to_list(100)
     return rentals
