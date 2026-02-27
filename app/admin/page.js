@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { DollarSign, Package, Users, AlertTriangle, TrendingUp, Activity, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
