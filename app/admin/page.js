@@ -72,6 +72,100 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchRentals = async (token, filters = {}) => {
+    setRentalsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.dateFrom) params.append('date_from', filters.dateFrom);
+      if (filters.dateTo) params.append('date_to', filters.dateTo);
+      if (filters.productId && filters.productId !== 'all') params.append('product_id', filters.productId);
+      if (filters.category && filters.category !== 'all') params.append('category', filters.category);
+      if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+      
+      const queryString = params.toString();
+      const url = `/api/admin/rentals/filtered${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRentals(data.rentals || []);
+        setCategories(data.categories || []);
+        setProducts(data.products || []);
+      } else {
+        toast.error('Failed to load rentals');
+      }
+    } catch (error) {
+      console.error('Error fetching rentals:', error);
+      toast.error('Error loading rentals');
+    } finally {
+      setRentalsLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    const token = localStorage.getItem('token');
+    fetchRentals(token, {
+      dateFrom,
+      dateTo,
+      productId: selectedProduct,
+      category: selectedCategory,
+      status: selectedStatus
+    });
+  };
+
+  const clearFilters = () => {
+    setDateFrom('');
+    setDateTo('');
+    setSelectedProduct('all');
+    setSelectedCategory('all');
+    setSelectedStatus('all');
+    const token = localStorage.getItem('token');
+    fetchRentals(token);
+  };
+
+  const exportToCSV = () => {
+    if (rentals.length === 0) {
+      toast.error('No rentals to export');
+      return;
+    }
+
+    const headers = ['Order ID', 'Customer Name', 'Customer Email', 'Product Name', 'Category', 'Start Date', 'End Date', 'Status', 'Total Price (₹)'];
+    const csvData = rentals.map(rental => [
+      rental.id,
+      rental.customer_name,
+      rental.customer_email,
+      rental.product_name,
+      rental.product_type,
+      new Date(rental.start_date).toLocaleDateString(),
+      new Date(rental.extended_end_date || rental.end_date).toLocaleDateString(),
+      rental.status,
+      rental.total_price?.toFixed(2)
+    ]);
+
+    const csvContent = [headers, ...csvData].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `rental_orders_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('CSV exported successfully!');
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-green-500/20 text-green-400 border-green-500/50';
+      case 'extended': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
+      case 'completed': return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+      case 'cancelled': return 'bg-red-500/20 text-red-400 border-red-500/50';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
