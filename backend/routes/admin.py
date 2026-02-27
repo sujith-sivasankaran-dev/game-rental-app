@@ -96,3 +96,101 @@ async def list_all_rentals(current_admin = Depends(get_current_admin)):
     cursor = rentals_collection.find({}, {"_id": 0}).sort("created_at", -1)
     rentals = await cursor.to_list(100)
     return rentals
+
+@router.get("/rentals/filtered")
+async def get_filtered_rentals(
+    current_admin = Depends(get_current_admin),
+    date_from: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    date_to: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    product_id: Optional[str] = Query(None, description="Filter by product ID"),
+    category: Optional[str] = Query(None, description="Filter by product category"),
+    status: Optional[str] = Query(None, description="Filter by rental status")
+) -> Dict[str, Any]:
+    """Get filtered rental orders with product details"""
+    database = db.get_db()
+    rentals_collection = database["rentals"]
+    products_collection = database["products"]
+    users_collection = database["users"]
+    
+    # Build query filter
+    query = {}
+    
+    # Date range filter - filter by rental creation date
+    if date_from or date_to:
+        date_filter = {}
+        if date_from:
+            try:
+                from_date = datetime.strptime(date_from, "%Y-%m-%d")
+                date_filter["$gte"] = from_date
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                to_date = datetime.strptime(date_to, "%Y-%m-%d")
+                # Include the entire end day
+                to_date = to_date.replace(hour=23, minute=59, second=59)
+                date_filter["$lte"] = to_date
+            except ValueError:
+                pass
+        if date_filter:
+            query["created_at"] = date_filter
+    
+    # Status filter
+    if status and status != "all":
+        query["status"] = status
+    
+    # Get all matching rentals
+    cursor = rentals_collection.find(query, {"_id": 0}).sort("created_at", -1)
+    rentals = await cursor.to_list(500)
+    
+    # Get all products for filtering by category and enriching data
+    products = {}
+    products_cursor = products_collection.find({}, {"_id": 0})
+    async for product in products_cursor:
+        products[product["id"]] = product
+    
+    # Get all users for customer details
+    users = {}
+    users_cursor = users_collection.find({}, {"_id": 0, "hashed_password": 0})
+    async for user in users_cursor:
+        users[user["id"]] = user
+    
+    # Filter by product_id and/or category, and enrich with product/user details
+    enriched_rentals = []
+    for rental in rentals:
+        product = products.get(rental.get("product_id"))
+        user = users.get(rental.get("user_id"))
+        
+        # Filter by product_id if specified
+        if product_id and rental.get("product_id") != product_id:
+            continue
+        
+        # Filter by category if specified
+        if category and category != "all":
+            if not product or product.get("product_type") != category:
+                continue
+        
+        # Enrich rental with product and user details
+        enriched_rental = {
+            **rental,
+            "product_name": product.get("name") if product else "Unknown Product",
+            "product_type": product.get("product_type") if product else "Unknown",
+            "product_photo": product.get("photo_url") if product else None,
+            "compatibility": product.get("compatibility") if product else "Unknown",
+            "customer_name": user.get("full_name") if user else "Unknown Customer",
+            "customer_email": user.get("email") if user else "Unknown"
+        }
+        enriched_rentals.append(enriched_rental)
+    
+    # Get unique categories for filter options
+    categories = list(set(p.get("product_type") for p in products.values() if p.get("product_type")))
+    
+    # Get products list for filter dropdown
+    products_list = [{"id": p["id"], "name": p["name"]} for p in products.values()]
+    
+    return {
+        "rentals": enriched_rentals,
+        "total_count": len(enriched_rentals),
+        "categories": categories,
+        "products": products_list
+    }
