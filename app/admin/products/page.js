@@ -409,7 +409,7 @@ export default function ProductManagementPage() {
                         <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
                         Price
                       </div>
-                      <span className="text-neon font-bold text-lg">${product.rental_price}/day</span>
+                      <span className="text-neon font-bold text-lg">₹{product.rental_price}/day</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center text-gray-400">

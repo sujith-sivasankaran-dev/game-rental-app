@@ -188,7 +188,7 @@ export default function HomePage() {
                     {/* Price */}
                     <div className="flex items-baseline justify-between">
                       <div>
-                        <span className="text-3xl font-bold text-neon">${product.rental_price}</span>
+                        <span className="text-3xl font-bold text-neon">₹{product.rental_price}</span>
                         <span className="text-gray-500 text-sm ml-2">/day</span>
                       </div>
                       <div className="text-right">
