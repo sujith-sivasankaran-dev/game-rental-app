@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from backend.routes.auth import get_current_admin
 from backend.config import db
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
