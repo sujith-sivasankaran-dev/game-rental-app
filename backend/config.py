@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     CLOUDINARY_API_SECRET: str = "gCIE5eAdEr1zmo1uxD6CTk3RlkA"
     
     class Config:
-        env_file = "../.env"
+        env_file = ".env"
         case_sensitive = True
         extra = "allow"  # Allow extra fields from .env
 
