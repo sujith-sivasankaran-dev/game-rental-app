@@ -119,22 +119,26 @@ export default function RootLayout({ children }) {
                 <div className="md:hidden py-4 space-y-2 border-t border-white/5">
                   {user ? (
                     <>
-                      <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
-                          Products
-                        </Button>
-                      </Link>
-                      <Link href="/account" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
-                          <User className="mr-2 h-4 w-4" />
-                          Account
-                        </Button>
-                      </Link>
+                      {user.role !== 'admin' && (
+                        <>
+                          <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                            <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
+                              Products
+                            </Button>
+                          </Link>
+                          <Link href="/account" onClick={() => setMobileMenuOpen(false)}>
+                            <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
+                              <User className="mr-2 h-4 w-4" />
+                              Account
+                            </Button>
+                          </Link>
+                        </>
+                      )}
                       {user.role === 'admin' && (
                         <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
                             <Shield className="mr-2 h-4 w-4" />
-                            Admin
+                            Admin Dashboard
                           </Button>
                         </Link>
                       )}
