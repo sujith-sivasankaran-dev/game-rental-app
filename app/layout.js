@@ -57,22 +57,26 @@ export default function RootLayout({ children }) {
                 <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
                   {user ? (
                     <>
-                      <Link href="/">
-                        <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
-                          Products
-                        </Button>
-                      </Link>
-                      <Link href="/account">
-                        <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
-                          <User className="mr-2 h-4 w-4" />
-                          Account
-                        </Button>
-                      </Link>
+                      {user.role !== 'admin' && (
+                        <>
+                          <Link href="/">
+                            <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
+                              Products
+                            </Button>
+                          </Link>
+                          <Link href="/account">
+                            <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
+                              <User className="mr-2 h-4 w-4" />
+                              Account
+                            </Button>
+                          </Link>
+                        </>
+                      )}
                       {user.role === 'admin' && (
                         <Link href="/admin">
                           <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
                             <Shield className="mr-2 h-4 w-4" />
-                            Admin
+                            Admin Dashboard
                           </Button>
                         </Link>
                       )}
