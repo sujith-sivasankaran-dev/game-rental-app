@@ -368,39 +368,6 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Most Rented Product */}
-        {metrics?.most_rented_product && (
-          <Card className="gaming-card">
-            <CardHeader>
-              <CardTitle className="text-white">Top Performer</CardTitle>
-              <CardDescription className="text-gray-400">
-                Most rented product
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-cyan-400" />
-                  </div>
-                  <div>
-                    <span className="text-xl text-white font-semibold block">
-                      {metrics.most_rented_product.name}
-                    </span>
-                    <span className="text-gray-400 text-sm">Most popular item</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-3xl font-bold text-neon block">
-                    {metrics.most_rented_product.rental_count}
-                  </span>
-                  <span className="text-gray-500 text-sm">rentals</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Rental Orders Section */}
         <Card className="gaming-card mt-8">
           <CardHeader>
