@@ -185,71 +185,75 @@ export default function AdminDashboard() {
         {/* Alerts Section */}
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           {/* Low Stock Alerts */}
-          <Card className="gaming-card">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-400" />
-                <CardTitle className="text-white">Low Stock Alerts</CardTitle>
-              </div>
-              <CardDescription className="text-gray-400">
-                Products with less than 2 items in stock
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {metrics?.low_stock_alerts?.length > 0 ? (
-                <div className="space-y-3">
-                  {metrics.low_stock_alerts.map((product) => (
-                    <div key={product.id} className="flex justify-between items-center p-3 glass-card rounded-lg">
-                      <span className="text-white font-medium">{product.name}</span>
-                      <div className="flex items-center space-x-2">
+          <Link href="/admin/low-stock">
+            <Card className="gaming-card cursor-pointer group h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                    <CardTitle className="text-white group-hover:text-neon transition-colors">Low Stock Alerts</CardTitle>
+                  </div>
+                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                    {metrics?.low_stock_alerts?.length || 0}
+                  </Badge>
+                </div>
+                <CardDescription className="text-gray-400">
+                  Products with less than 2 items in stock
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {metrics?.low_stock_alerts?.length > 0 ? (
+                  <div className="space-y-2">
+                    {metrics.low_stock_alerts.slice(0, 3).map((product) => (
+                      <div key={product.id} className="flex justify-between items-center text-sm">
+                        <span className="text-gray-300">{product.name}</span>
                         <span className="text-yellow-400 font-bold">{product.available_stock}</span>
-                        <span className="text-gray-500 text-sm">left</span>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 mx-auto mb-3 text-gray-700" />
-                  <p className="text-gray-500">All products have sufficient stock</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                    {metrics.low_stock_alerts.length > 3 && (
+                      <p className="text-cyan-400 text-sm">+{metrics.low_stock_alerts.length - 3} more...</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">All products have sufficient stock</p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Upcoming Returns */}
-          <Card className="gaming-card">
-            <CardHeader>
-              <CardTitle className="text-white">Upcoming Returns</CardTitle>
-              <CardDescription className="text-gray-400">
-                Rentals ending in the next 3 days
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {metrics?.upcoming_returns?.length > 0 ? (
-                <div className="space-y-3">
-                  {metrics.upcoming_returns.slice(0, 5).map((rental) => (
-                    <div key={rental.id} className="flex justify-between items-center p-3 glass-card rounded-lg">
-                      <div className="flex-1">
-                        <span className="text-white text-sm block">
-                          Rental #{rental.id.slice(0, 8)}
-                        </span>
-                        <span className="text-gray-500 text-xs">
-                          {new Date(rental.extended_end_date || rental.end_date).toLocaleDateString()}
-                        </span>
+          <Link href="/admin/upcoming-returns">
+            <Card className="gaming-card cursor-pointer group h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white group-hover:text-neon transition-colors">Upcoming Returns</CardTitle>
+                  <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50">
+                    {metrics?.upcoming_returns?.length || 0}
+                  </Badge>
+                </div>
+                <CardDescription className="text-gray-400">
+                  Rentals ending in the next 3 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {metrics?.upcoming_returns?.length > 0 ? (
+                  <div className="space-y-2">
+                    {metrics.upcoming_returns.slice(0, 3).map((rental) => (
+                      <div key={rental.id} className="flex justify-between items-center text-sm">
+                        <span className="text-gray-300">#{rental.id.slice(0, 8)}</span>
+                        <span className="text-cyan-400">{new Date(rental.extended_end_date || rental.end_date).toLocaleDateString()}</span>
                       </div>
-                      <span className="text-cyan-400 text-xs">Due soon</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Activity className="h-12 w-12 mx-auto mb-3 text-gray-700" />
-                  <p className="text-gray-500">No upcoming returns</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                    {metrics.upcoming_returns.length > 3 && (
+                      <p className="text-cyan-400 text-sm">+{metrics.upcoming_returns.length - 3} more...</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">No upcoming returns</p>
+                )}
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Most Rented Product */}
