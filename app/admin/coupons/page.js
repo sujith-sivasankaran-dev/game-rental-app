@@ -53,7 +53,7 @@ export default function CouponManagementPage() {
     try {
       const response = await fetch('/api/coupons', {
         headers: {
-          'Authorization': `Bearer ₹{token}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -83,7 +83,7 @@ export default function CouponManagementPage() {
       };
 
       const url = editingCoupon 
-        ? `/api/coupons/₹{editingCoupon.id}`
+        ? `/api/coupons/${editingCoupon.id}`
         : '/api/coupons';
       
       const method = editingCoupon ? 'PUT' : 'POST';
@@ -91,7 +91,7 @@ export default function CouponManagementPage() {
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ₹{token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend),
@@ -133,10 +133,10 @@ export default function CouponManagementPage() {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`/api/coupons/₹{couponId}`, {
+      const response = await fetch(`/api/coupons/${couponId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ₹{token}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -442,7 +442,7 @@ export default function CouponManagementPage() {
                         <DollarSign className="mr-2 h-4 w-4 text-cyan-400" />
                         Min Order
                       </div>
-                      <span className="text-white">₹{coupon.min_order_value || 0}</span>
+                      <span className="text-white">${coupon.min_order_value || 0}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center text-gray-400">
