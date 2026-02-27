@@ -17,6 +17,19 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState(null);
   const [user, setUser] = useState(null);
+  
+  // Rental orders state
+  const [rentals, setRentals] = useState([]);
+  const [rentalsLoading, setRentalsLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  
+  // Filter state
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,6 +48,7 @@ export default function AdminDashboard() {
 
     setUser(parsedUser);
     fetchDashboardMetrics(token);
+    fetchRentals(token);
   }, []);
 
   const fetchDashboardMetrics = async (token) => {
