@@ -400,6 +400,196 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Rental Orders Section */}
+        <Card className="gaming-card mt-8">
+          <CardHeader>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl text-white flex items-center gap-2">
+                  <Calendar className="h-6 w-6 text-cyan-400" />
+                  Rental Orders
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  View and filter all rental orders
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50">
+                  {rentals.length} orders
+                </Badge>
+                <Button 
+                  onClick={exportToCSV}
+                  className="btn-gaming"
+                  size="sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Filters */}
+            <div className="glass-card p-4 mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="h-5 w-5 text-cyan-400" />
+                <span className="text-white font-semibold">Filters</span>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+                {/* Date From */}
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-400">From Date</label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="bg-black/50 border-white/10 text-white"
+                  />
+                </div>
+                
+                {/* Date To */}
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-400">To Date</label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="bg-black/50 border-white/10 text-white"
+                  />
+                </div>
+                
+                {/* Category Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-400">Category</label>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="bg-black/50 border-white/10 text-white">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/10">
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Product Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-400">Product</label>
+                  <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                    <SelectTrigger className="bg-black/50 border-white/10 text-white">
+                      <SelectValue placeholder="All Products" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/10">
+                      <SelectItem value="all">All Products</SelectItem>
+                      {products.map((prod) => (
+                        <SelectItem key={prod.id} value={prod.id}>{prod.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Status Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-400">Status</label>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="bg-black/50 border-white/10 text-white">
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/10">
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="extended">Extended</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Filter Actions */}
+                <div className="space-y-2 flex flex-col justify-end">
+                  <label className="text-sm text-gray-400 invisible">Actions</label>
+                  <div className="flex gap-2">
+                    <Button onClick={applyFilters} className="btn-gaming flex-1">
+                      <Search className="h-4 w-4 mr-1" />
+                      Apply
+                    </Button>
+                    <Button onClick={clearFilters} variant="outline" className="border-white/10 text-gray-400 hover:text-white">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Orders Table */}
+            {rentalsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center space-y-4">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-cyan-500 border-r-transparent"></div>
+                  <p className="text-gray-400">Loading orders...</p>
+                </div>
+              </div>
+            ) : rentals.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-white/10 hover:bg-transparent">
+                      <TableHead className="text-gray-400">Order ID</TableHead>
+                      <TableHead className="text-gray-400">Customer</TableHead>
+                      <TableHead className="text-gray-400">Product</TableHead>
+                      <TableHead className="text-gray-400">Category</TableHead>
+                      <TableHead className="text-gray-400">Period</TableHead>
+                      <TableHead className="text-gray-400">Status</TableHead>
+                      <TableHead className="text-gray-400 text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rentals.map((rental) => (
+                      <TableRow key={rental.id} className="border-white/10 hover:bg-white/5">
+                        <TableCell className="text-cyan-400 font-mono text-sm">
+                          #{rental.id?.slice(0, 8)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-white">{rental.customer_name}</div>
+                          <div className="text-gray-500 text-xs">{rental.customer_email}</div>
+                        </TableCell>
+                        <TableCell className="text-gray-300">
+                          {rental.product_name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="border-white/20 text-gray-400">
+                            {rental.product_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-400 text-sm">
+                          <div>{new Date(rental.start_date).toLocaleDateString()}</div>
+                          <div className="text-gray-500">to {new Date(rental.extended_end_date || rental.end_date).toLocaleDateString()}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(rental.status)}>
+                            {rental.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right text-white font-semibold">
+                          ₹{rental.total_price?.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Package className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-500">No rental orders found</p>
+                <p className="text-gray-600 text-sm mt-1">Try adjusting your filters</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
