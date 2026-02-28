@@ -158,7 +158,12 @@ export default function ProductManagementPage() {
       extension_multiplier: product.extension_multiplier.toString(),
       total_stock: product.total_stock.toString(),
       is_active: product.is_active,
+      photo_url: product.photo_url || '',
     });
+    // Set existing image preview if available
+    if (product.photo_url) {
+      setImagePreview(product.photo_url);
+    }
     setIsDialogOpen(true);
   };
 
