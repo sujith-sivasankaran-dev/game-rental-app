@@ -465,11 +465,19 @@ export default function ProductManagementPage() {
                       resetForm();
                     }}
                     className="border-white/10 text-white hover:bg-white/5"
+                    disabled={uploading}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="btn-gaming">
-                    {editingProduct ? 'Update' : 'Create'} Product
+                  <Button type="submit" className="btn-gaming" disabled={uploading}>
+                    {uploading ? (
+                      <>
+                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>{editingProduct ? 'Update' : 'Create'} Product</>
+                    )}
                   </Button>
                 </div>
               </form>
