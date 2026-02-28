@@ -489,7 +489,17 @@ export default function ProductManagementPage() {
         ) : (
           <div className="responsive-grid">
             {products.map((product) => (
-              <Card key={product.id} className="gaming-card">
+              <Card key={product.id} className="gaming-card overflow-hidden">
+                {/* Product Image */}
+                {product.photo_url && (
+                  <div className="h-40 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
+                    <img 
+                      src={product.photo_url} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
