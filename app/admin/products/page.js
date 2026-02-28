@@ -294,6 +294,58 @@ export default function ProductManagementPage() {
                   />
                 </div>
 
+                {/* Image Upload Section */}
+                <div className="space-y-2">
+                  <Label className="text-white">Product Image</Label>
+                  <div className="flex items-start gap-4">
+                    {/* Image Preview */}
+                    <div className="relative w-32 h-32 rounded-lg border-2 border-dashed border-white/20 overflow-hidden bg-black/30 flex items-center justify-center">
+                      {imagePreview ? (
+                        <>
+                          <img 
+                            src={imagePreview} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeImage}
+                            className="absolute top-1 right-1 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X className="h-3 w-3 text-white" />
+                          </button>
+                        </>
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-gray-600" />
+                      )}
+                    </div>
+                    
+                    {/* Upload Button */}
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        className="hidden"
+                        id="product-image"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-white/10 text-white hover:bg-white/5"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {imagePreview ? 'Change Image' : 'Upload Image'}
+                      </Button>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG up to 5MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label className="text-white">Compatibility *</Label>
