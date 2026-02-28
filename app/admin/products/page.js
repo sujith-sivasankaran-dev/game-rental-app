@@ -71,15 +71,48 @@ export default function ProductManagementPage() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image must be less than 5MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData({ ...formData, photo_url: '' });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
+    setUploading(true);
     
     try {
       const formDataToSend = new FormData();
       Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key]);
+        if (key !== 'photo_url' || formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
       });
+      
+      // Add image file if selected
+      if (imageFile) {
+        formDataToSend.append('photo', imageFile);
+      }
 
       const url = editingProduct 
         ? `/api/products/${editingProduct.id}`
@@ -106,6 +139,8 @@ export default function ProductManagementPage() {
       }
     } catch (error) {
       toast.error('Something went wrong');
+    } finally {
+      setUploading(false);
     }
   };
 
