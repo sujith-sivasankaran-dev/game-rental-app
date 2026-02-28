@@ -192,6 +192,11 @@ export default function ProductManagementPage() {
 
   const resetForm = () => {
     setEditingProduct(null);
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setFormData({
       name: '',
       description: '',
@@ -204,6 +209,7 @@ export default function ProductManagementPage() {
       extension_multiplier: '1.0',
       total_stock: '',
       is_active: true,
+      photo_url: '',
     });
   };
 
