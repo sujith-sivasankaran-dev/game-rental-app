@@ -1,5 +1,5 @@
 from backend.config import db
-from backend.models.rental import RentalCreate, RentalExtension, RentalResponse, RentalInDB
+from backend.models.rental import RentalCreate, RentalExtension, RentalResponse, RentalInDB, DeliveryAddress
 from backend.services.product_service import ProductService
 from backend.services.coupon_service import CouponService
 from datetime import datetime, timedelta
@@ -61,6 +61,7 @@ class RentalService:
             "discount_amount": discount_amount,
             "total_price": total_price,
             "coupon_code": rental_data.coupon_code,
+            "delivery_address": rental_data.delivery_address.model_dump() if rental_data.delivery_address else None,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         }
@@ -155,6 +156,11 @@ class RentalService:
     async def _format_rental_response(rental: dict) -> RentalResponse:
         product = await ProductService.get_product(rental["product_id"])
         
+        # Format delivery address if exists
+        delivery_addr = None
+        if rental.get("delivery_address"):
+            delivery_addr = DeliveryAddress(**rental["delivery_address"])
+        
         return RentalResponse(
             id=rental["id"],
             user_id=rental["user_id"],
@@ -170,6 +176,7 @@ class RentalService:
             discount_amount=rental.get("discount_amount", 0.0),
             total_price=rental["total_price"],
             coupon_code=rental.get("coupon_code"),
+            delivery_address=delivery_addr,
             created_at=rental["created_at"],
             updated_at=rental["updated_at"]
         )

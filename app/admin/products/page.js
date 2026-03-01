@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Package, DollarSign, Box } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, DollarSign, Box, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ProductManagementPage() {
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -31,6 +35,7 @@ export default function ProductManagementPage() {
     extension_multiplier: '1.0',
     total_stock: '',
     is_active: true,
+    photo_url: '',
   });
 
   useEffect(() => {
@@ -66,15 +71,48 @@ export default function ProductManagementPage() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image must be less than 5MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData({ ...formData, photo_url: '' });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
+    setUploading(true);
     
     try {
       const formDataToSend = new FormData();
       Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key]);
+        if (key !== 'photo_url' || formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
       });
+      
+      // Add image file if selected
+      if (imageFile) {
+        formDataToSend.append('photo', imageFile);
+      }
 
       const url = editingProduct 
         ? `/api/products/${editingProduct.id}`
@@ -101,6 +139,8 @@ export default function ProductManagementPage() {
       }
     } catch (error) {
       toast.error('Something went wrong');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -118,7 +158,12 @@ export default function ProductManagementPage() {
       extension_multiplier: product.extension_multiplier.toString(),
       total_stock: product.total_stock.toString(),
       is_active: product.is_active,
+      photo_url: product.photo_url || '',
     });
+    // Set existing image preview if available
+    if (product.photo_url) {
+      setImagePreview(product.photo_url);
+    }
     setIsDialogOpen(true);
   };
 
@@ -147,6 +192,11 @@ export default function ProductManagementPage() {
 
   const resetForm = () => {
     setEditingProduct(null);
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setFormData({
       name: '',
       description: '',
@@ -159,6 +209,7 @@ export default function ProductManagementPage() {
       extension_multiplier: '1.0',
       total_stock: '',
       is_active: true,
+      photo_url: '',
     });
   };
 
@@ -241,6 +292,58 @@ export default function ProductManagementPage() {
                     rows={3}
                     required
                   />
+                </div>
+
+                {/* Image Upload Section */}
+                <div className="space-y-2">
+                  <Label className="text-white">Product Image</Label>
+                  <div className="flex items-start gap-4">
+                    {/* Image Preview */}
+                    <div className="relative w-32 h-32 rounded-lg border-2 border-dashed border-white/20 overflow-hidden bg-black/30 flex items-center justify-center">
+                      {imagePreview ? (
+                        <>
+                          <img 
+                            src={imagePreview} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeImage}
+                            className="absolute top-1 right-1 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X className="h-3 w-3 text-white" />
+                          </button>
+                        </>
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-gray-600" />
+                      )}
+                    </div>
+                    
+                    {/* Upload Button */}
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        className="hidden"
+                        id="product-image"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-white/10 text-white hover:bg-white/5"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {imagePreview ? 'Change Image' : 'Upload Image'}
+                      </Button>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG up to 5MB
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -362,11 +465,19 @@ export default function ProductManagementPage() {
                       resetForm();
                     }}
                     className="border-white/10 text-white hover:bg-white/5"
+                    disabled={uploading}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="btn-gaming">
-                    {editingProduct ? 'Update' : 'Create'} Product
+                  <Button type="submit" className="btn-gaming" disabled={uploading}>
+                    {uploading ? (
+                      <>
+                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>{editingProduct ? 'Update' : 'Create'} Product</>
+                    )}
                   </Button>
                 </div>
               </form>
@@ -386,7 +497,17 @@ export default function ProductManagementPage() {
         ) : (
           <div className="responsive-grid">
             {products.map((product) => (
-              <Card key={product.id} className="gaming-card">
+              <Card key={product.id} className="gaming-card overflow-hidden">
+                {/* Product Image */}
+                {product.photo_url && (
+                  <div className="h-40 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
+                    <img 
+                      src={product.photo_url} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">

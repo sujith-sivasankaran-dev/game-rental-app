@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.config import db, settings
-from backend.routes import auth, products, rentals, coupons, admin
+from backend.routes import auth, products, rentals, coupons, admin, addresses
 import uvicorn
 
 app = FastAPI(
@@ -52,6 +52,7 @@ app.include_router(products.router, prefix="/api")
 app.include_router(rentals.router, prefix="/api")
 app.include_router(coupons.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(addresses.router, prefix="/api")
 
 # Root Endpoint
 @app.get("/")
