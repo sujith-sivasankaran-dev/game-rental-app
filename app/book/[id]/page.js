@@ -518,6 +518,19 @@ export default function BookingPage() {
               height="250px"
             />
 
+            {/* Manual Address Input */}
+            <div className="space-y-2">
+              <Label className="text-white">Full Address *</Label>
+              <textarea
+                value={newAddressData.full_address}
+                onChange={(e) => setNewAddressData({ ...newAddressData, full_address: e.target.value })}
+                placeholder="Enter your complete address (e.g., 123, 4th Floor, ABC Apartments, MG Road, Bangalore - 560001)"
+                className="w-full min-h-[80px] px-3 py-2 bg-black/50 border border-white/10 rounded-md text-white placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                required
+              />
+              <p className="text-xs text-gray-500">You can type your address manually or select from the map above</p>
+            </div>
+
             {/* Form Fields */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
