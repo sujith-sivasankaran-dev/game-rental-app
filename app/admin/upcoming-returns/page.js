@@ -363,14 +363,23 @@ export default function UpcomingReturnsPage() {
                               {address.landmark && (
                                 <p className="text-gray-500 text-xs">Near: {address.landmark}</p>
                               )}
-                              <Button
-                                size="sm"
-                                onClick={() => openGoogleMapsDirections(address)}
-                                className="w-full btn-gaming text-xs py-1"
-                              >
-                                <Navigation className="h-3 w-3 mr-1" />
-                                Get Directions
-                              </Button>
+                              {address.phone && (
+                                <p className="text-gray-500 text-xs">📞 {address.phone}</p>
+                              )}
+                              {address.latitude && address.latitude !== 0 ? (
+                                <Button
+                                  size="sm"
+                                  onClick={() => openGoogleMapsDirections(address)}
+                                  className="w-full btn-gaming text-xs py-1"
+                                >
+                                  <Navigation className="h-3 w-3 mr-1" />
+                                  Get Directions
+                                </Button>
+                              ) : (
+                                <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/50 text-xs">
+                                  Manual Entry (No Map Pin)
+                                </Badge>
+                              )}
                             </div>
                           ) : (
                             <p className="text-gray-500 text-sm">No address provided</p>
