@@ -156,6 +156,11 @@ class RentalService:
     async def _format_rental_response(rental: dict) -> RentalResponse:
         product = await ProductService.get_product(rental["product_id"])
         
+        # Format delivery address if exists
+        delivery_addr = None
+        if rental.get("delivery_address"):
+            delivery_addr = DeliveryAddress(**rental["delivery_address"])
+        
         return RentalResponse(
             id=rental["id"],
             user_id=rental["user_id"],
@@ -171,6 +176,7 @@ class RentalService:
             discount_amount=rental.get("discount_amount", 0.0),
             total_price=rental["total_price"],
             coupon_code=rental.get("coupon_code"),
+            delivery_address=delivery_addr,
             created_at=rental["created_at"],
             updated_at=rental["updated_at"]
         )
