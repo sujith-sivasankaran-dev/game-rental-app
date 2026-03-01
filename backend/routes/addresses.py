@@ -30,16 +30,16 @@ async def get_address(address_id: str, current_user: UserResponse = Depends(get_
     return address
 
 @router.post("", response_model=AddressResponse)
-async def create_address(address_data: AddressCreate, current_user = Depends(get_current_user)):
+async def create_address(address_data: AddressCreate, current_user: UserResponse = Depends(get_current_user)):
     """Create a new address"""
     addresses_collection = db.get_db()["addresses"]
     
     # Check if this is the first address (make it default)
-    existing_count = await addresses_collection.count_documents({"user_id": current_user["id"]})
+    existing_count = await addresses_collection.count_documents({"user_id": current_user.id})
     
     address = AddressInDB(
         **address_data.model_dump(),
-        user_id=current_user["id"],
+        user_id=current_user.id,
         is_default=existing_count == 0
     )
     
@@ -50,14 +50,14 @@ async def create_address(address_data: AddressCreate, current_user = Depends(get
 async def update_address(
     address_id: str, 
     address_data: AddressUpdate, 
-    current_user = Depends(get_current_user)
+    current_user: UserResponse = Depends(get_current_user)
 ):
     """Update an address"""
     addresses_collection = db.get_db()["addresses"]
     
     # Check if address exists and belongs to user
     existing = await addresses_collection.find_one(
-        {"id": address_id, "user_id": current_user["id"]}
+        {"id": address_id, "user_id": current_user.id}
     )
     if not existing:
         raise HTTPException(status_code=404, detail="Address not found")
@@ -75,7 +75,7 @@ async def update_address(
     return updated
 
 @router.delete("/{address_id}")
-async def delete_address(address_id: str, current_user = Depends(get_current_user)):
+async def delete_address(address_id: str, current_user: UserResponse = Depends(get_current_user)):
     """Delete an address"""
     addresses_collection = db.get_db()["addresses"]
     
