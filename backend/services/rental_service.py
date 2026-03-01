@@ -1,5 +1,5 @@
 from backend.config import db
-from backend.models.rental import RentalCreate, RentalExtension, RentalResponse, RentalInDB
+from backend.models.rental import RentalCreate, RentalExtension, RentalResponse, RentalInDB, DeliveryAddress
 from backend.services.product_service import ProductService
 from backend.services.coupon_service import CouponService
 from datetime import datetime, timedelta
