@@ -172,6 +172,14 @@ export default function BookingPage() {
     }
 
     const token = localStorage.getItem('token');
+    
+    // If no map location selected, set default coordinates (0, 0) to indicate manual entry
+    const dataToSend = {
+      ...newAddressData,
+      latitude: newAddressData.latitude || 0,
+      longitude: newAddressData.longitude || 0,
+    };
+    
     try {
       const response = await fetch('/api/addresses', {
         method: 'POST',
@@ -179,7 +187,7 @@ export default function BookingPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newAddressData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
