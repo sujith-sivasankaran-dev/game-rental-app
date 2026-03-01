@@ -81,7 +81,7 @@ async def delete_address(address_id: str, current_user: UserResponse = Depends(g
     
     # Check if address exists and belongs to user
     existing = await addresses_collection.find_one(
-        {"id": address_id, "user_id": current_user["id"]}
+        {"id": address_id, "user_id": current_user.id}
     )
     if not existing:
         raise HTTPException(status_code=404, detail="Address not found")
@@ -90,7 +90,7 @@ async def delete_address(address_id: str, current_user: UserResponse = Depends(g
     
     # If deleted address was default, make another one default
     if existing.get("is_default"):
-        another = await addresses_collection.find_one({"user_id": current_user["id"]})
+        another = await addresses_collection.find_one({"user_id": current_user.id})
         if another:
             await addresses_collection.update_one(
                 {"id": another["id"]},
@@ -100,20 +100,20 @@ async def delete_address(address_id: str, current_user: UserResponse = Depends(g
     return {"message": "Address deleted successfully"}
 
 @router.post("/{address_id}/set-default")
-async def set_default_address(address_id: str, current_user = Depends(get_current_user)):
+async def set_default_address(address_id: str, current_user: UserResponse = Depends(get_current_user)):
     """Set an address as default"""
     addresses_collection = db.get_db()["addresses"]
     
     # Check if address exists and belongs to user
     existing = await addresses_collection.find_one(
-        {"id": address_id, "user_id": current_user["id"]}
+        {"id": address_id, "user_id": current_user.id}
     )
     if not existing:
         raise HTTPException(status_code=404, detail="Address not found")
     
     # Remove default from all user's addresses
     await addresses_collection.update_many(
-        {"user_id": current_user["id"]},
+        {"user_id": current_user.id},
         {"$set": {"is_default": False}}
     )
     
