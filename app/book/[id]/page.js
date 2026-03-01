@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Package, Tag, ArrowLeft, ShoppingCart, CheckCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Calendar, Clock, Package, Tag, ArrowLeft, ShoppingCart, CheckCircle, MapPin, Plus, Navigation } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import LocationPicker from '@/components/LocationPicker';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -20,11 +23,23 @@ export default function BookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [product, setProduct] = useState(null);
   const [user, setUser] = useState(null);
+  const [addresses, setAddresses] = useState([]);
+  const [isNewAddressDialogOpen, setIsNewAddressDialogOpen] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
   
   const [formData, setFormData] = useState({
     start_date: '',
     rental_duration: 1,
     coupon_code: '',
+  });
+
+  const [newAddressData, setNewAddressData] = useState({
+    label: '',
+    full_address: '',
+    latitude: 0,
+    longitude: 0,
+    landmark: '',
+    phone: '',
   });
   
   const [priceBreakdown, setPriceBreakdown] = useState({
@@ -45,6 +60,7 @@ export default function BookingPage() {
     
     setUser(JSON.parse(userData));
     fetchProduct();
+    fetchAddresses(token);
   }, [productId]);
 
   useEffect(() => {
@@ -74,6 +90,25 @@ export default function BookingPage() {
       router.push('/');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAddresses = async (token) => {
+    try {
+      const response = await fetch('/api/addresses', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAddresses(data);
+        // Auto-select default address
+        const defaultAddress = data.find(a => a.is_default);
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress.id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load addresses');
     }
   };
 
@@ -121,11 +156,64 @@ export default function BookingPage() {
     }
   };
 
+  const handleNewAddressLocationSelect = (location) => {
+    setNewAddressData(prev => ({
+      ...prev,
+      full_address: location.full_address,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    }));
+  };
+
+  const handleSaveNewAddress = async () => {
+    if (!newAddressData.label || !newAddressData.full_address) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newAddressData),
+      });
+
+      if (response.ok) {
+        const newAddress = await response.json();
+        setAddresses([...addresses, newAddress]);
+        setSelectedAddressId(newAddress.id);
+        setIsNewAddressDialogOpen(false);
+        setNewAddressData({
+          label: '',
+          full_address: '',
+          latitude: 0,
+          longitude: 0,
+          landmark: '',
+          phone: '',
+        });
+        toast.success('Address saved!');
+      } else {
+        toast.error('Failed to save address');
+      }
+    } catch (error) {
+      toast.error('Something went wrong');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.start_date) {
       toast.error('Please select a start date');
+      return;
+    }
+
+    if (!selectedAddressId) {
+      toast.error('Please select a delivery address');
       return;
     }
 
@@ -136,6 +224,9 @@ export default function BookingPage() {
 
     setSubmitting(true);
     const token = localStorage.getItem('token');
+
+    // Get selected address details
+    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
 
     try {
       // Convert duration to hours based on product's min_rental_unit
@@ -154,6 +245,14 @@ export default function BookingPage() {
           start_date: new Date(formData.start_date).toISOString(),
           rental_duration: durationInHours,
           coupon_code: formData.coupon_code || null,
+          delivery_address: selectedAddress ? {
+            address_id: selectedAddress.id,
+            full_address: selectedAddress.full_address,
+            latitude: selectedAddress.latitude,
+            longitude: selectedAddress.longitude,
+            landmark: selectedAddress.landmark || null,
+            phone: selectedAddress.phone || null,
+          } : null,
         }),
       });
 
@@ -170,6 +269,8 @@ export default function BookingPage() {
       setSubmitting(false);
     }
   };
+
+  const selectedAddress = addresses.find(a => a.id === selectedAddressId);
 
   if (loading) {
     return (
@@ -285,6 +386,51 @@ export default function BookingPage() {
                     <p className="text-xs text-gray-500">Minimum: {product.min_rental_period} {product.min_rental_unit}(s)</p>
                   </div>
 
+                  {/* Delivery Address Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-white flex items-center">
+                      <MapPin className="mr-2 h-4 w-4 text-cyan-400" />
+                      Delivery Address *
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
+                        <SelectTrigger className="bg-black/50 border-white/10 text-white flex-1">
+                          <SelectValue placeholder="Select an address" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-900 border-white/10">
+                          {addresses.map((addr) => (
+                            <SelectItem key={addr.id} value={addr.id}>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{addr.label}</span>
+                                {addr.is_default && (
+                                  <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">Default</Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsNewAddressDialogOpen(true)}
+                        className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* Show selected address details */}
+                    {selectedAddress && (
+                      <div className="p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30 mt-2">
+                        <p className="text-white text-sm">{selectedAddress.full_address}</p>
+                        {selectedAddress.landmark && (
+                          <p className="text-gray-400 text-xs mt-1">Landmark: {selectedAddress.landmark}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Coupon Code */}
                   <div className="space-y-2">
                     <Label className="text-white flex items-center">
@@ -335,7 +481,7 @@ export default function BookingPage() {
                   <Button 
                     type="submit" 
                     className="w-full btn-gaming h-12 text-lg"
-                    disabled={submitting || product.available_stock < 1}
+                    disabled={submitting || product.available_stock < 1 || !selectedAddressId}
                   >
                     {submitting ? (
                       <>
@@ -355,6 +501,71 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+
+      {/* New Address Dialog */}
+      <Dialog open={isNewAddressDialogOpen} onOpenChange={setIsNewAddressDialogOpen}>
+        <DialogContent className="bg-gray-900 border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Add New Address</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Select a location on the map and fill in the details
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            {/* Map Picker */}
+            <LocationPicker 
+              onLocationSelect={handleNewAddressLocationSelect}
+              height="250px"
+            />
+
+            {/* Form Fields */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-white">Label *</Label>
+                <Input
+                  value={newAddressData.label}
+                  onChange={(e) => setNewAddressData({ ...newAddressData, label: e.target.value })}
+                  placeholder="Home, Office, etc."
+                  className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Contact Phone</Label>
+                <Input
+                  value={newAddressData.phone}
+                  onChange={(e) => setNewAddressData({ ...newAddressData, phone: e.target.value })}
+                  placeholder="Phone number"
+                  className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Landmark (Optional)</Label>
+              <Input
+                value={newAddressData.landmark}
+                onChange={(e) => setNewAddressData({ ...newAddressData, landmark: e.target.value })}
+                placeholder="Near school, opposite mall, etc."
+                className="bg-black/50 border-white/10 text-white focus:border-cyan-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsNewAddressDialogOpen(false)}
+                className="border-white/10 text-white hover:bg-white/5"
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSaveNewAddress} className="btn-gaming">
+                Save Address
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
