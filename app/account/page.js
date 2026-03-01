@@ -94,8 +94,8 @@ export default function AccountPage() {
     e.preventDefault();
     const token = localStorage.getItem('token');
 
-    if (!addressFormData.full_address || !addressFormData.latitude) {
-      toast.error('Please select a location on the map');
+    if (!addressFormData.full_address) {
+      toast.error('Please enter your full address');
       return;
     }
 
@@ -103,6 +103,13 @@ export default function AccountPage() {
       toast.error('Please enter a label for this address');
       return;
     }
+
+    // If no map location selected, set default coordinates (0, 0) to indicate manual entry
+    const dataToSend = {
+      ...addressFormData,
+      latitude: addressFormData.latitude || 0,
+      longitude: addressFormData.longitude || 0,
+    };
 
     try {
       const url = editingAddress 
@@ -117,7 +124,7 @@ export default function AccountPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(addressFormData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
