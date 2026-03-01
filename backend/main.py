@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.config import db, settings
-from backend.routes import auth, products, rentals, coupons, admin
+from backend.routes import auth, products, rentals, coupons, admin, addresses
 import uvicorn
 
 app = FastAPI(
