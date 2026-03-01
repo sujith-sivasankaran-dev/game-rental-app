@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Download, Phone, MapPin, Package, User } from 'lucide-react';
+import { Calendar, Download, Phone, MapPin, Package, User, Navigation, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function UpcomingReturnsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [rentals, setRentals] = useState([]);
+  const [users, setUsers] = useState({});
   const [filteredRentals, setFilteredRentals] = useState([]);
   const [filter, setFilter] = useState('3days');
   const [customDate, setCustomDate] = useState('');
@@ -33,29 +35,40 @@ export default function UpcomingReturnsPage() {
       return;
     }
 
-    fetchRentals(token);
+    fetchData(token);
   }, []);
 
   useEffect(() => {
     applyFilter();
   }, [filter, customDate, rentals]);
 
-  const fetchRentals = async (token) => {
+  const fetchData = async (token) => {
     try {
-      const response = await fetch('/api/admin/rentals', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      // Fetch rentals
+      const rentalsResponse = await fetch('/api/admin/rentals/filtered', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      
+      // Fetch users
+      const usersResponse = await fetch('/api/admin/users', {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (rentalsResponse.ok) {
+        const rentalsData = await rentalsResponse.json();
         // Filter only active rentals
-        const activeRentals = data.filter(r => r.status === 'active' || r.status === 'extended');
+        const activeRentals = (rentalsData.rentals || []).filter(r => r.status === 'active' || r.status === 'extended');
         setRentals(activeRentals);
       }
+
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        const usersMap = {};
+        usersData.forEach(u => { usersMap[u.id] = u; });
+        setUsers(usersMap);
+      }
     } catch (error) {
-      toast.error('Failed to load rentals');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -76,6 +89,8 @@ export default function UpcomingReturnsPage() {
           return daysUntilReturn === 1;
         case '3days':
           return daysUntilReturn >= 0 && daysUntilReturn <= 3;
+        case '7days':
+          return daysUntilReturn >= 0 && daysUntilReturn <= 7;
         case 'custom':
           if (!customDate) return true;
           const selectedDate = new Date(customDate);
@@ -95,49 +110,43 @@ export default function UpcomingReturnsPage() {
     setFilteredRentals(filtered);
   };
 
-  const exportToCSV = async () => {
-    const token = localStorage.getItem('token');
-    
-    // Fetch user details for each rental
-    const csvData = await Promise.all(filteredRentals.map(async (rental) => {
-      try {
-        const userResponse = await fetch('/api/admin/users', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        const users = await userResponse.json();
-        const user = users.find(u => u.id === rental.user_id) || {};
-        
-        return {
-          'Rental ID': rental.id,
-          'Product Name': rental.product_name,
-          'Customer Name': user.full_name || 'N/A',
-          'Phone Number': user.phone || 'N/A',
-          'Email': user.email || 'N/A',
-          'Start Date': new Date(rental.start_date).toLocaleDateString(),
-          'Return Date': new Date(rental.extended_end_date || rental.end_date).toLocaleDateString(),
-          'Status': rental.status,
-          'Total Amount': `₹${rental.total_price}`,
-        };
-      } catch (error) {
-        return {
-          'Rental ID': rental.id,
-          'Product Name': rental.product_name,
-          'Customer Name': 'Error',
-          'Phone Number': 'Error',
-          'Email': 'Error',
-          'Start Date': new Date(rental.start_date).toLocaleDateString(),
-          'Return Date': new Date(rental.extended_end_date || rental.end_date).toLocaleDateString(),
-          'Status': rental.status,
-          'Total Amount': `₹${rental.total_price}`,
-        };
-      }
-    }));
+  const openGoogleMapsDirections = (address) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${address.latitude},${address.longitude}`;
+    window.open(url, '_blank');
+  };
+
+  const exportToCSV = () => {
+    if (filteredRentals.length === 0) {
+      toast.error('No rentals to export');
+      return;
+    }
+
+    const csvData = filteredRentals.map(rental => {
+      const user = users[rental.user_id] || {};
+      const address = rental.delivery_address || {};
+      
+      return {
+        'Rental ID': rental.id,
+        'Product Name': rental.product_name,
+        'Product Type': rental.product_type,
+        'Customer Name': rental.customer_name || user.full_name || 'N/A',
+        'Customer Email': rental.customer_email || user.email || 'N/A',
+        'Customer Phone': address.phone || user.phone || 'N/A',
+        'Start Date': new Date(rental.start_date).toLocaleDateString(),
+        'Return Date': new Date(rental.extended_end_date || rental.end_date).toLocaleDateString(),
+        'Status': rental.status,
+        'Total Amount': `₹${rental.total_price}`,
+        'Delivery Address': address.full_address || 'N/A',
+        'Landmark': address.landmark || 'N/A',
+        'Google Maps Link': address.latitude ? `https://www.google.com/maps?q=${address.latitude},${address.longitude}` : 'N/A',
+      };
+    });
 
     // Convert to CSV
     const headers = Object.keys(csvData[0] || {});
     const csvContent = [
       headers.join(','),
-      ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+      ...csvData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
     ].join('\n');
 
     // Download CSV
@@ -152,6 +161,20 @@ export default function UpcomingReturnsPage() {
     document.body.removeChild(link);
     
     toast.success('CSV exported successfully!');
+  };
+
+  const getDaysUntilReturn = (rental) => {
+    const returnDate = new Date(rental.extended_end_date || rental.end_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
+    return days;
+  };
+
+  const getUrgencyColor = (days) => {
+    if (days <= 0) return 'bg-red-500/20 text-red-400 border-red-500/50';
+    if (days === 1) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+    return 'bg-green-500/20 text-green-400 border-green-500/50';
   };
 
   if (loading) {
@@ -169,11 +192,18 @@ export default function UpcomingReturnsPage() {
     <div className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-8 lg:px-8">
         {/* Header */}
-        <div className="mb-8 space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold text-gradient">
-            Upcoming Returns
-          </h1>
-          <p className="text-gray-400">Manage and export rental return schedules</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="space-y-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-gradient">
+              Upcoming Returns
+            </h1>
+            <p className="text-gray-400">Manage and track rental return schedules</p>
+          </div>
+          <Link href="/admin">
+            <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
+              Back to Dashboard
+            </Button>
+          </Link>
         </div>
 
         {/* Filters & Export */}
@@ -183,23 +213,24 @@ export default function UpcomingReturnsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-12 items-end">
-              <div className="md:col-span-4 space-y-2">
-                <label className="text-sm text-gray-400">Filter by Date</label>
+              <div className="md:col-span-3 space-y-2">
+                <label className="text-sm text-gray-400">Filter by Return Date</label>
                 <Select value={filter} onValueChange={setFilter}>
                   <SelectTrigger className="bg-black/50 border-white/10 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-900 border-white/10">
                     <SelectItem value="today">Today</SelectItem>
                     <SelectItem value="tomorrow">Tomorrow</SelectItem>
                     <SelectItem value="3days">Next 3 Days</SelectItem>
+                    <SelectItem value="7days">Next 7 Days</SelectItem>
                     <SelectItem value="custom">Custom Date</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {filter === 'custom' && (
-                <div className="md:col-span-4 space-y-2">
+                <div className="md:col-span-3 space-y-2">
                   <label className="text-sm text-gray-400">Select Date</label>
                   <Input
                     type="date"
@@ -210,7 +241,7 @@ export default function UpcomingReturnsPage() {
                 </div>
               )}
 
-              <div className={filter === 'custom' ? 'md:col-span-4' : 'md:col-span-8'}>
+              <div className={filter === 'custom' ? 'md:col-span-6' : 'md:col-span-9'}>
                 <Button
                   onClick={exportToCSV}
                   disabled={filteredRentals.length === 0}
@@ -226,7 +257,7 @@ export default function UpcomingReturnsPage() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-400">Showing:</span>
                 <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50">
-                  {filteredRentals.length} rentals
+                  {filteredRentals.length} upcoming returns
                 </Badge>
               </div>
             </div>
@@ -238,66 +269,119 @@ export default function UpcomingReturnsPage() {
           <Card className="gaming-card">
             <CardContent className="pt-12 pb-12 text-center">
               <Package className="h-16 w-16 mx-auto mb-4 text-gray-700" />
-              <p className="text-gray-400 text-lg">No rentals found for selected filter</p>
+              <p className="text-gray-400 text-lg">No upcoming returns found</p>
+              <p className="text-gray-600 text-sm mt-2">Try adjusting your filter</p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredRentals.map((rental, index) => (
-              <Card key={rental.id} className="gaming-card">
-                <CardContent className="pt-6">
-                  <div className="grid gap-4 md:grid-cols-12">
-                    <div className="md:col-span-1 flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                        <span className="text-cyan-400 font-bold">{index + 1}</span>
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-8 space-y-3">
-                      <div>
-                        <h3 className="text-white font-semibold text-lg">{rental.product_name}</h3>
-                        <p className="text-gray-400 text-sm">Rental ID: #{rental.id.slice(0, 8)}...</p>
-                      </div>
-
-                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-                        <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-cyan-400" />
-                          <span className="text-gray-400">User ID: {rental.user_id.slice(0, 8)}</span>
+            {filteredRentals.map((rental, index) => {
+              const daysUntil = getDaysUntilReturn(rental);
+              const address = rental.delivery_address;
+              
+              return (
+                <Card key={rental.id} className="gaming-card overflow-hidden">
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      {/* Header Row */}
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                          <div className="h-12 w-12 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-cyan-400 font-bold">{index + 1}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-white font-semibold text-lg">{rental.product_name}</h3>
+                            <p className="text-gray-500 text-sm">ID: #{rental.id.slice(0, 8)}</p>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-cyan-400" />
-                          <span className="text-gray-400">Start: {new Date(rental.start_date).toLocaleDateString()}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getUrgencyColor(daysUntil)}>
+                            {daysUntil <= 0 ? 'Due Today' : daysUntil === 1 ? 'Due Tomorrow' : `${daysUntil} Days Left`}
+                          </Badge>
+                          <Badge className={
+                            rental.status === 'active' 
+                              ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                              : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50'
+                          }>
+                            {rental.status}
+                          </Badge>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-yellow-400" />
-                          <span className="text-yellow-400 font-medium">
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        {/* Customer Info */}
+                        <div className="p-3 glass-card rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <User className="h-4 w-4 text-cyan-400" />
+                            <span className="text-gray-400 text-sm">Customer</span>
+                          </div>
+                          <p className="text-white font-medium">{rental.customer_name}</p>
+                          <p className="text-gray-500 text-xs">{rental.customer_email}</p>
+                          {address?.phone && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <Phone className="h-3 w-3 text-gray-500" />
+                              <span className="text-gray-400 text-xs">{address.phone}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Dates */}
+                        <div className="p-3 glass-card rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calendar className="h-4 w-4 text-cyan-400" />
+                            <span className="text-gray-400 text-sm">Rental Period</span>
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            Start: <span className="text-white">{new Date(rental.start_date).toLocaleDateString()}</span>
+                          </p>
+                          <p className="text-yellow-400 text-sm font-medium">
                             Return: {new Date(rental.extended_end_date || rental.end_date).toLocaleDateString()}
-                          </span>
+                          </p>
                         </div>
-                        <div className="text-white font-bold">
-                          ₹{rental.total_price}
+
+                        {/* Amount */}
+                        <div className="p-3 glass-card rounded-lg">
+                          <div className="text-gray-400 text-sm mb-2">Total Amount</div>
+                          <p className="text-2xl font-bold text-neon">₹{rental.total_price?.toFixed(2)}</p>
+                          {rental.coupon_code && (
+                            <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/50 mt-1 text-xs">
+                              {rental.coupon_code}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Delivery Address */}
+                        <div className="p-3 glass-card rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="h-4 w-4 text-cyan-400" />
+                            <span className="text-gray-400 text-sm">Delivery Address</span>
+                          </div>
+                          {address ? (
+                            <div className="space-y-2">
+                              <p className="text-white text-sm line-clamp-2">{address.full_address}</p>
+                              {address.landmark && (
+                                <p className="text-gray-500 text-xs">Near: {address.landmark}</p>
+                              )}
+                              <Button
+                                size="sm"
+                                onClick={() => openGoogleMapsDirections(address)}
+                                className="w-full btn-gaming text-xs py-1"
+                              >
+                                <Navigation className="h-3 w-3 mr-1" />
+                                Get Directions
+                              </Button>
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 text-sm">No address provided</p>
+                          )}
                         </div>
                       </div>
                     </div>
-
-                    <div className="md:col-span-3 flex flex-col justify-center space-y-2">
-                      <Badge className={
-                        rental.status === 'active' 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                          : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50'
-                      }>
-                        {rental.status}
-                      </Badge>
-                      {rental.coupon_code && (
-                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/50">
-                          Coupon: {rental.coupon_code}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
