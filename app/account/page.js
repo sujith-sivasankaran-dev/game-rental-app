@@ -343,15 +343,22 @@ export default function AccountPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/10">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openGoogleMapsDirections(address)}
-                        className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
-                      >
-                        <Navigation className="h-4 w-4 mr-1" />
-                        Directions
-                      </Button>
+                      {address.latitude && address.latitude !== 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openGoogleMapsDirections(address)}
+                          className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                        >
+                          <Navigation className="h-4 w-4 mr-1" />
+                          Directions
+                        </Button>
+                      )}
+                      {(!address.latitude || address.latitude === 0) && (
+                        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/50 text-xs">
+                          Manual Entry
+                        </Badge>
+                      )}
                       {!address.is_default && (
                         <Button
                           variant="ghost"
