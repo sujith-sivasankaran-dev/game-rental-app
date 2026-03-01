@@ -61,6 +61,7 @@ class RentalService:
             "discount_amount": discount_amount,
             "total_price": total_price,
             "coupon_code": rental_data.coupon_code,
+            "delivery_address": rental_data.delivery_address.model_dump() if rental_data.delivery_address else None,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         }
