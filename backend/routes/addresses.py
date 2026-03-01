@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from backend.models.address import AddressCreate, AddressUpdate, AddressResponse, AddressInDB
+from backend.models.user import UserResponse
 from backend.routes.auth import get_current_user
 from backend.config import db
 from datetime import datetime
@@ -9,19 +10,19 @@ import uuid
 router = APIRouter(prefix="/addresses", tags=["Addresses"])
 
 @router.get("", response_model=List[AddressResponse])
-async def get_user_addresses(current_user = Depends(get_current_user)):
+async def get_user_addresses(current_user: UserResponse = Depends(get_current_user)):
     """Get all addresses for the current user"""
     addresses_collection = db.get_db()["addresses"]
-    cursor = addresses_collection.find({"user_id": current_user["id"]}, {"_id": 0})
+    cursor = addresses_collection.find({"user_id": current_user.id}, {"_id": 0})
     addresses = await cursor.to_list(100)
     return addresses
 
 @router.get("/{address_id}", response_model=AddressResponse)
-async def get_address(address_id: str, current_user = Depends(get_current_user)):
+async def get_address(address_id: str, current_user: UserResponse = Depends(get_current_user)):
     """Get a specific address"""
     addresses_collection = db.get_db()["addresses"]
     address = await addresses_collection.find_one(
-        {"id": address_id, "user_id": current_user["id"]}, 
+        {"id": address_id, "user_id": current_user.id}, 
         {"_id": 0}
     )
     if not address:
