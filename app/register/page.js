@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Gamepad2, UserPlus, Mail, Lock, User, Phone } from 'lucide-react';
+import { Gamepad2, UserPlus, Mail, Lock, User, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
@@ -49,39 +49,38 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-black">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-black">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-black to-black" />
-      <div className="absolute inset-0 scan-lines opacity-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-black to-black" />
       
-      {/* Animated Circles */}
-      <div className="absolute top-20 right-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+      {/* Animated Circles - Hidden on mobile */}
+      <div className="hidden sm:block absolute top-20 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="hidden sm:block absolute bottom-20 left-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
       <div className="w-full max-w-md relative z-10">
         <Card className="gaming-card border-white/10">
-          <CardHeader className="text-center space-y-6 pb-8">
+          <CardHeader className="text-center space-y-4 sm:space-y-6 pb-4 sm:pb-6 px-4 sm:px-6">
             <div className="flex justify-center">
               <div className="relative">
-                <Gamepad2 className="h-16 w-16 text-neon" />
+                <Gamepad2 className="h-12 w-12 sm:h-16 sm:w-16 text-neon" />
                 <div className="absolute inset-0 blur-2xl bg-cyan-500/50" />
               </div>
             </div>
-            <div className="space-y-2">
-              <CardTitle className="text-3xl font-bold text-gradient">
+            <div className="space-y-1 sm:space-y-2">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-gradient">
                 Join SS Gaming
               </CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-gray-400 text-sm sm:text-base">
                 Create your account and start renting
               </CardDescription>
             </div>
           </CardHeader>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name" className="text-white flex items-center">
+          <CardContent className="px-4 sm:px-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="full_name" className="text-white flex items-center text-sm sm:text-base">
                     <User className="h-4 w-4 mr-2 text-cyan-400" />
                     Full Name
                   </Label>
@@ -91,13 +90,14 @@ export default function RegisterPage() {
                     placeholder="John Doe"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-12"
+                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-11 sm:h-12 text-base"
                     required
+                    autoComplete="name"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white flex items-center">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="email" className="text-white flex items-center text-sm sm:text-base">
                     <Mail className="h-4 w-4 mr-2 text-cyan-400" />
                     Email Address
                   </Label>
@@ -107,28 +107,31 @@ export default function RegisterPage() {
                     placeholder="you@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-12"
+                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-11 sm:h-12 text-base"
                     required
+                    autoComplete="email"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-white flex items-center">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="phone" className="text-white flex items-center text-sm sm:text-base">
                     <Phone className="h-4 w-4 mr-2 text-cyan-400" />
-                    Phone Number (Optional)
+                    Phone Number
+                    <span className="text-gray-500 text-xs ml-1">(Optional)</span>
                   </Label>
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="1234567890"
+                    placeholder="+91 98765 43210"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-12"
+                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-11 sm:h-12 text-base"
+                    autoComplete="tel"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white flex items-center">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="password" className="text-white flex items-center text-sm sm:text-base">
                     <Lock className="h-4 w-4 mr-2 text-cyan-400" />
                     Password
                   </Label>
@@ -138,49 +141,81 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-12"
+                    className="bg-black/50 border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-500 h-11 sm:h-12 text-base"
                     required
+                    autoComplete="new-password"
                   />
+                  <p className="text-[10px] sm:text-xs text-gray-500">Minimum 6 characters</p>
                 </div>
               </div>
 
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 btn-gaming text-lg font-semibold"
+                className="w-full h-11 sm:h-12 btn-gaming text-base sm:text-lg font-semibold"
               >
                 {loading ? (
                   <>
-                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent" />
+                    <div className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent" />
                     Creating account...
                   </>
                 ) : (
                   <>
-                    <UserPlus className="mr-2 h-5 w-5" />
-                    Sign Up
+                    <UserPlus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Create Account
                   </>
                 )}
               </Button>
             </form>
 
-            <div className="mt-6 space-y-4">
+            {/* Benefits */}
+            <div className="mt-5 sm:mt-6 p-3 sm:p-4 glass-card rounded-lg space-y-2">
+              <p className="text-xs text-gray-400 font-medium">Benefits of joining:</p>
+              <ul className="space-y-1.5">
+                <li className="flex items-center text-xs text-gray-500">
+                  <CheckCircle className="h-3 w-3 mr-2 text-green-500 flex-shrink-0" />
+                  Track your rental history
+                </li>
+                <li className="flex items-center text-xs text-gray-500">
+                  <CheckCircle className="h-3 w-3 mr-2 text-green-500 flex-shrink-0" />
+                  Save delivery addresses
+                </li>
+                <li className="flex items-center text-xs text-gray-500">
+                  <CheckCircle className="h-3 w-3 mr-2 text-green-500 flex-shrink-0" />
+                  Exclusive member discounts
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-5 sm:mt-6 space-y-4">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-white/10" />
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-black px-4 text-gray-400">Already have an account?</span>
+                <div className="relative flex justify-center text-xs sm:text-sm">
+                  <span className="bg-[#0d0d0d] px-3 sm:px-4 text-gray-500">Already have an account?</span>
                 </div>
               </div>
 
               <Link href="/login" className="block">
-                <Button variant="outline" className="w-full h-12 border-white/10 text-white hover:border-cyan-500 hover:text-cyan-400 hover:bg-white/5">
+                <Button 
+                  variant="outline" 
+                  className="w-full h-11 sm:h-12 border-white/10 text-white hover:border-cyan-500 hover:text-cyan-400 hover:bg-white/5 group"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                   Login Instead
                 </Button>
               </Link>
             </div>
           </CardContent>
         </Card>
+        
+        {/* Back to Home Link */}
+        <div className="mt-4 text-center">
+          <Link href="/" className="text-gray-500 text-sm hover:text-cyan-400 transition-colors">
+            ← Back to Home
+          </Link>
+        </div>
       </div>
     </div>
   );
