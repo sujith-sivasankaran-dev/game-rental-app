@@ -1,180 +1,192 @@
 <analysis>
+<original_problem_statement>
+Build a modern, responsive web application for a console rental business named SS Gaming Rentals. The application should be scalable and modular, featuring separate portals for Admins and Customers.
 
-**original_problem_statement**: Build a modern, responsive web application for a console rental business named SS Gaming Rentals. The application should be scalable and modular, featuring separate portals for Admins and Customers.
-
-**PRODUCT REQUIREMENTS**:
-- **Backend**: Originally FastAPI + PostgreSQL, but the user agreed to use **MongoDB** for the MVP.
-- **Frontend**: Next.js + Tailwind CSS with a dark gaming theme.
-- **Authentication**: JWT-based.
-- **Image Storage**: Cloudinary for product photos.
-- **Admin Features**:
-    - Dashboard with metrics (revenue, rentals, products, customers, etc.).
-    - Product, Coupon, and User management.
-    - Dedicated pages for Low Stock Alerts and Upcoming Returns.
-    - CSV export functionality for upcoming returns with date filtering.
-- **Customer Features**:
-    - Product listing with search and filtering.
-    - Rental booking system (partially deferred).
-    - Account management (rental history, active rentals).
-- **UI/Theme**: Dark gaming theme (black, white, neon cyan accents), responsive design.
-- **Currency**: All pricing should be in Indian Rupees (₹).
+**PRODUCT REQUIREMENTS ADDED/MODIFIED IN THIS SESSION**:
+- **Admin Dashboard**:
+    - Add a section to view all rental orders, with filters for date range, period (from-to), product, and category.
+    - Remove the Top Performer section for admin users.
+    - Remove Products and Account links from the navbar for admin users.
+- **Address Management**:
+    - Users must be able to add, edit, and delete shipping addresses in their account section.
+    - An address can be a precise location selected from an interactive Google Map (gunpoint) or a manually entered full text address.
+    - During booking, users must be able to select from their saved addresses or add a new one.
+    - The delivery address must be visible to admins in the Upcoming Returns and rental orders sections, with a clickable link to Google Maps directions if coordinates are available.
+- **Stock &amp; Availability Logic**:
+    - The stock/inventory system must be based on date-based availability, not a simple quantity decrement. The system must check how many units of a product are rented out during a specific date range to determine availability.
+- **Health Check**:
+    - The frontend application should call a backend health check API on load to confirm connectivity.
+- **Product Management**:
+    - The Add/Edit Product form in the admin panel must include a field for uploading a product image.
+    - Product images should be displayed on the product listing cards.
+- **Booking Flow**:
+    - A booking page () must be created to handle the Rent Now action, preventing a 404 error.
+- **UI/UX**:
+    - A comprehensive UI/UX overhaul to improve responsiveness and modern design, especially for mobile and laptop screen sizes.
+</original_problem_statement>
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application is set up with a Next.js frontend and a separate FastAPI backend running on port 8000. A Next.js rewrite rule in  acts as a proxy, forwarding all frontend requests from  to the FastAPI backend. The application uses MongoDB for the database and Cloudinary for image storage.
+A full-stack application with a Next.js frontend and a separate FastAPI backend. The application connects to a MongoDB database (either local for dev or cloud-based for prod) and uses Cloudinary for image storage.
 
-The application features a complete UI/UX redesign with a responsive, dark gaming theme. Core functionalities like user registration, login (for both customers and admin), product listing, and an admin dashboard are implemented and functional. The database has been populated with sample data for products, users, rentals, and coupons to demonstrate functionality.
+Key features implemented include:
+- **Authentication**: JWT-based login/registration for customers and admins.
+- **Core Logic**: The inventory management system has been correctly refactored to use **date-based availability**, a critical business logic fix.
+- **Address Management**: A complete address management system is in place, allowing users to save addresses with either a Google Maps location or manual text entry. These addresses are used during booking and are visible to admins.
+- **Admin Portal**: The dashboard includes metrics and a comprehensive, filterable Rental Orders section. The Upcoming Returns page shows delivery addresses. Product and coupon management is functional, now with image uploads for products.
+- **Customer Portal**: Users can browse products, book rentals using the date-based availability check, and manage their account (rental history, addresses).
+- **UI/UX**: A major UI/UX overhaul has been applied, improving the theme, responsiveness, and mobile navigation.
+- **Deployment**: The application has been configured for production deployment, with logic to handle separate frontend/backend URLs via environment variables (), and a health-check API has been added for monitoring.
 
 **Last working item**:
--   **Last item agent was working**: The agent was implementing a user request for two new admin pages: Upcoming Returns and Low Stock Alerts. This included creating a CSV export feature for the returns page. The agent has successfully created the placeholder files for these pages ( and ) and updated the main admin dashboard to link to them. The implementation of the actual page logic (data fetching, table rendering, CSV export) has not started yet.
--   **Status**: NOT STARTED
+-   **Last item agent was working**: A full UI/UX overhaul to improve the application's responsiveness and modern aesthetic. This involved rewriting , , and the home, login, and register pages to use better responsive patterns, a cleaner design, and a slide-out mobile navigation menu.
+-   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both
+-   **Which testing method agent to use?**: screenshot tool
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-There are no outstanding bugs or issues. The previous critical issue involving broken template literals due to a faulty search-and-replace command has been fully resolved.
+There are no known bugs or issues at this time. All previously reported issues have been resolved.
 
 **In progress Task List**:
--   **Task 1: (P0) Implement Upcoming Returns Admin Page**
-    -   **Where to resume**: .
-    -   **What will be achieved with this?**: This will create a dedicated page for admins to view all rentals that are due soon. It will fulfill a direct user request and add significant operational value. The page must include:
-        1.  A table displaying rental details (product, customer info, return date).
-        2.  Date-based filtering options (e.g., Expiring Today, Tomorrow, Next 3 Days, and a custom date picker).
-        3.  A Export to CSV button that generates and downloads a CSV file based on the selected filter.
-    -   **Status**: NOT STARTED
-    -   **Should Test frontend/backend/both after fix?**: both
-    -   **Blocked on something**: None.
-
--   **Task 2: (P1) Implement Low Stock Alerts Admin Page**
-    -   **Where to resume**: .
-    -   **What will be achieved with this?**: This will create a page for admins to quickly see which products are running low on inventory, helping with stock management. The page should fetch and display a list of products where the available stock is below a certain threshold (e.g., <= 2).
-    -   **Status**: NOT STARTED
-    -   **Should Test frontend/backend/both after fix?**: both
+-   **Task 1: (P0) Finalize and Verify UI/UX Overhaul**
+    -   **Where to resume**: The agent has overwritten the files but has not verified the visual outcome. The next step is to run the application and use the screenshot tool to inspect the new UI on various pages (home, login, product list) and screen sizes.
+    -   **What will be achieved with this?**: A more professional, modern, and mobile-friendly user experience across the application.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) Complete the full customer rental booking flow as per the original problem statement.
-    -   (P2) Implement the rental extension feature for customers.
+    -   **(P0) Implement Low Stock Alerts Admin Page**: Create the page at  to display products where stock is below a certain threshold. This is a pending task from the initial request.
+    -   **(P1) Implement CSV Export for Upcoming Returns**: Add a button to the  page that exports the filtered list of returns to a CSV file. This is also a pending task from the initial request.
 -   **Future Tasks**:
-    -   Integrate a payment gateway (e.g., Stripe).
-    -   Implement email notifications for rental confirmations and reminders.
-    -   Migrate the database from MongoDB to PostgreSQL as per the original, long-term requirement.
+    -   (P1) Complete the full customer rental booking flow (e.g., rental extension feature).
+    -   (P2) Integrate a payment gateway (e.g., Stripe).
+    -   (P3) Implement email notifications for rental confirmations and reminders.
+    -   (P4) Migrate the database from MongoDB to PostgreSQL as per the original, long-term requirement.
 
 **Completed work in this session**
--   **Backend**:
-    -   Set up a complete FastAPI backend with JWT authentication.
-    -   Created all necessary API endpoints for auth, products, coupons, and admin dashboard metrics.
-    -   Successfully debugged several critical startup issues (ModuleNotFoundError, Pydantic validation, and a  library version conflict).
-    -   Fixed a recurring MongoDB ObjectID serialization error in API responses.
--   **Frontend**:
-    -   Built a complete Next.js frontend with pages for home, login, registration, account, and a full admin section (dashboard, product management, coupon management).
-    -   Implemented a full UI/UX redesign for a responsive, dark gaming theme.
-    -   Fixed multiple frontend bugs, including a Shadcn  component error.
--   **Architecture & Integration**:
-    -   Configured a Next.js rewrite rule to proxy frontend API calls to the FastAPI backend, resolving cross-origin issues.
-    -   Successfully integrated Cloudinary for image handling.
-    -   Populated the MongoDB database with extensive test data for users, products, rentals, and coupons to simulate a live environment.
--   **Feature Implementation**:
-    -   Changed all currency displays from USD ($) to Indian Rupees (₹).
-    -   Fixed a critical bug where a global search-and-replace corrupted all JavaScript template literals across the frontend.
-    -   Created placeholder pages for Upcoming Returns and Low Stock.
+-   **Critical Bug Fix**: Fixed a bug where stock was permanently decremented instead of being checked based on date availability. This involved a major refactor of the backend availability logic and the frontend booking page.
+-   **Feature: Address Management**: Implemented a full system for users to add/edit/delete addresses with either a Google Maps location or manual text entry. This was integrated into the booking flow and admin return-tracking pages.
+-   **Feature: Admin Rental Orders**: Added a new filterable section to the admin dashboard to view all rental orders.
+-   **Feature: Product Image Uploads**: Added an image upload field to the product management form and updated product cards to display images.
+-   **Feature: Health Check**: Added a  endpoint to the backend and a call from the frontend on load to verify connectivity.
+-   **Bug Fix**: Created the  page to resolve a 404 error on the Rent Now button.
+-   **Bug Fix**: Resolved a  on the admin page by adding the missing import.
+-   **UI Cleanup**: Removed the Top Performer section and specific nav links for the admin user as requested.
+-   **Production Support**:
+    -   Guided the user through setting up and debugging a MongoDB Atlas cloud database for production.
+    -   Identified and fixed multiple production-specific issues, including environment variable handling (, ) and the critical issue of the FastAPI backend not running in the production environment.
+    -   Provided the correct commands to run the backend manually in a production terminal.
+    -   Provided clear instructions on how to run the full application stack locally.
 
 **Earlier issues found/mentioned but not fixed**
-None. All identified issues have been addressed and resolved.
+None.
 
 **Known issue recurrence from previous fork**
--   A global search-and-replace command () to change currency symbols () inadvertently broke all JavaScript template literals (e.g.,  became ). This required a significant effort to find and fix all instances. The next agent must be extremely cautious with global find-and-replace operations on the codebase.
+-   The issue of the preview URL being unreliable/cached persists as an environmental quirk. The agent successfully worked around it by testing APIs directly and restarting services.
+-   The session revealed a critical deployment issue: the default production startup command only runs the Next.js frontend, not the separate FastAPI backend. The next agent must be aware that a separate command is needed to run the backend in production.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Full-Stack**: Decoupled frontend (Next.js) and backend (FastAPI).
--   **API Proxy**: Next.js  are used to proxy requests from  to the FastAPI backend on , solving CORS issues in the development environment.
--   **Database**: MongoDB is used for data persistence, accessed by the FastAPI backend.
--   **Authentication**: JWT (JSON Web Tokens) are used for securing API endpoints and managing user sessions.
--   **Styling**: Tailwind CSS with shadcn/ui components for a responsive, modern UI.
--   **External Services**: Cloudinary is used for storing and serving product images.
+-   **Full-Stack**: Decoupled Next.js frontend and FastAPI backend.
+-   **API Proxy for Production**: Uses  rewrites with a  environment variable to proxy API calls in production environments.
+-   **Date-Based Inventory**: The core business logic for stock checks is now based on counting overlapping rental periods, not a simple quantity field.
+-   **External Services**: Cloudinary for images, Google Maps API (Maps JavaScript, Places, Geocoding) for address management.
+-   **Database**: MongoDB, with a clear distinction between local dev instance and cloud Atlas instance for production.
 
 **key DB schema**
--   **users**: {, , ,  ('admin' or 'customer')}
--   **products**: {, , , , , }
--   **rentals**: {, , , , }
--   **coupons**: {, , , }
--   **couponUsage**: Tracks usage of coupons by users.
+-   **users**: {, , , , }
+-   **products**: {, , , , }
+-   **rentals**: {, , , , , }
+-   **addresses**: {, , , , } (NEW)
+-   **coupons**: {, , }
 
 **changes in tech stack**
--   The user initially requested a **PostgreSQL** database but agreed to use **MongoDB** for the MVP to accelerate development. The long-term goal may still involve a migration.
+-   No changes to the core stack, but **Google Maps API** was integrated as a new key dependency.
 
 **All files of reference**
--   : New placeholder for the upcoming returns page. Needs implementation.
--   : New placeholder for the low stock page. Needs implementation.
--   : Admin dashboard, recently updated to link to the new pages.
--   : Contains the critical API proxy  rule.
--   : The entry point for the FastAPI application.
--   : Contains the logic for the admin dashboard metrics, which may need to be extended for the new pages.
--   : Stores all credentials and environment-specific variables.
+-   **/app/backend/services/product_service.py**: Contains the new critical date-based stock availability logic.
+-   **/app/app/book/[id]/page.js**: Frontend implementation of the date-based stock check and address selection.
+-   **/app/app/account/page.js**: Contains the new address management UI.
+-   **/app/components/LocationPicker.js**: The reusable component for Google Maps integration.
+-   **/app/backend/config.py**: Updated to correctly read environment variables in production.
+-   **/app/next.config.js**: Updated to use  for production API proxying.
+-   **/app/app/globals.css** & **/app/app/layout.js**: Core files for the new UI/UX overhaul.
 
 **Areas that need refactoring**:
--   The file  was created to hold the backend URL but became obsolete after the Next.js API proxy was implemented. It can be safely removed, and any lingering imports should be cleaned up.
+-   The file  is obsolete and unused after the  rewrite was implemented. It can be safely deleted.
 
 **key api endpoints**
--   
--   
--   
--   
--   
--   
--   
--    (This will likely need to be created or extended for the new Upcoming Returns page)
+-   : (NEW) Checks available stock for a product within a specific date range.
+-   : (NEW) CRUD operations for user addresses.
+-   : (NEW) Update a specific address.
+-   : (NEW) Delete a specific address.
+-   : (NEW) Backend health check endpoint.
 
 **Critical Info for New Agent**
--   **API Routing is Proxied**: All frontend  requests to the backend MUST use relative paths starting with  (e.g., ). The  file handles forwarding these to the FastAPI server on . Do not use absolute URLs to  in the frontend code.
--   **Currency is Rupees (₹)**: Ensure all new UI components that display pricing use the '₹' symbol. When modifying files, be careful not to corrupt JS template literals ().
--   **Tech Stack**: The backend is FastAPI+MongoDB, not PostgreSQL as per the original spec. This was a user-approved change for the MVP.
--   **Admin Credentials**: , .
+-   **Production Deployment is Dual-Process**: To run this app in production, **two** services must be started: the Next.js frontend (yarn run v1.22.22
+$ next start
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.) and the FastAPI backend. The command for the backend is ✅ Connected to MongoDB
+❌ Closed MongoDB connection. This is a common point of failure if forgotten.
+-   **Production Backend URL**: The frontend is configured to proxy API requests to a production backend URL specified by the  environment variable.
+-   **Required Production Env Vars**:
+    -   : The full connection string for MongoDB Atlas.
+    -   : The name of the database (e.g., ).
+    -   : The URL of the deployed FastAPI backend (e.g., ).
+    -   : The API key for Google Maps.
+    -   : Cloudinary credentials.
+    -   : A secret for signing tokens.
+-   **Stock Logic is Date-Based**: Do not attempt to modify a  field on the product model. All availability checks must go through the  endpoint or the corresponding backend service which calculates availability based on overlapping rentals.
 
 **documents created in this job**
--   
--   
+None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user**: The admin page currency should be 'rs', not '$'. Create new pages for upcoming returns and low stock alerts. The returns page needs a CSV export with date filters. (PENDING IMPLEMENTATION)
-2.  **agent**: Acknowledged the request and started work.
-3.  **agent**: Fixed currency on the admin dashboard.
-4.  **agent**: Updated the admin dashboard to link to the new pages.
-5.  **agent**: Created the placeholder file for the upcoming-returns page.
-6.  **agent**: Created the placeholder file for the low-stock page.
-7.  **agent**: Started final testing before handover.
-8.  **user**: (No message)
-9.  **user**: (No message)
-10. **user**: (No message)
+1.  **User**: Improve the UI/UX for all screen sizes. (IN PROGRESS)
+2.  **User**: The stock logic is wrong; it should be date-based. (COMPLETED)
+3.  **User**: Add a health check API to be hit on frontend load. (COMPLETED)
+4.  **User**: What is  for? (ANSWERED)
+5.  **User**: My production backend is hosted at . How do I configure this? (COMPLETED)
+6.  **User**: Add a manual full address text field in addition to the map picker. (COMPLETED)
+7.  **User**: Is the Google API key hardcoded? (ANSWERED)
+8.  **User**: Provided Google Maps API Key. (COMPLETED)
+9.  **User**: Add address management with Google Maps pin-pointing. This should be used in booking and visible to admins. (COMPLETED)
+10. **User**: The Rent Now button gives a 404 error. (COMPLETED)
 
 **Project Health Check:**
--   **Working**: Core application (Auth, Product Listing, Admin Dashboard), API Proxy, Database connection, UI Theme.
+-   **Working**: All core functionalities including auth, date-based booking, product management with images, address management, and admin dashboard features.
 -   **Broken**: None.
 -   **Mocked**: None.
--   **Incomplete**: The newly requested admin pages for Upcoming Returns and Low Stock Alerts exist as files but have no functionality.
+-   **Incomplete**: The UI/UX overhaul is in progress and needs visual verification. The Low Stock Alerts page and Upcoming Returns CSV export are not started.
 
 **3rd Party Integrations**
--   **Cloudinary**: Used for product image storage. Requires User API Key (already provided and configured).
+-   **Cloudinary**: Used for product image storage. Requires User API Key.
+-   **Google Maps API** (Maps JavaScript, Places, Geocoding): Used for address selection and location services. Requires User API Key.
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: The agent created several ad-hoc Python scripts in the root directory for testing and data seeding (e.g., , ). These are not part of a formal test suite.
+-   **Test files created**: The agent created several ad-hoc Python scripts for testing APIs (e.g., , , ). These are not part of a formal test suite.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
 -   **Admin User**:
     -   Email: 
-    -   Password: 
--   **Cloudinary Credentials**: Stored in .
+    -   Password:  (or whatever the user set in their cloud DB).
+-   **API Keys**: Stored in  (Cloudinary, Google Maps).
 
 **What agent forgot to execute**
-The agent successfully scaffolded the files for the user's latest request (new admin pages with CSV export) but did not implement the functionality within those files. This is the main task to be picked up by the next agent.
-
+The agent correctly prioritized the user's immediate bug reports and feature requests. However, two tasks from the initial problem statement have not been addressed yet:
+1.  The Low Stock Alerts admin page.
+2.  The Export to CSV functionality on the Upcoming Returns page.
+These should be prioritized next after the UI/UX overhaul is verified.
 </analysis>
