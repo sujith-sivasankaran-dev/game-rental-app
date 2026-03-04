@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Query
 from backend.models.product import ProductCreate, ProductUpdate, ProductResponse, ProductWithHistory
 from backend.services.product_service import ProductService
 from backend.routes.auth import get_current_admin, get_current_user
 from backend.utils.cloudinary_helper import upload_image
 from typing import List, Optional
+from datetime import datetime
 import json
 
 router = APIRouter(prefix="/products", tags=["Products"])
