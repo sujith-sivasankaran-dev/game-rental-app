@@ -41,8 +41,14 @@ def upload_image(file_content: bytes, filename: str, folder: str = "ss_gaming_re
     Returns: (url, error_message) - url is None if failed, error_message is None if success
     """
     try:
+        # Configure Cloudinary fresh on each upload to pick up any env var changes
+        settings = _configure_cloudinary()
+        
         logger.info(f"Attempting Cloudinary upload: filename={filename}, folder={folder}, content_size={len(file_content)} bytes")
-        logger.info(f"Cloudinary config: cloud_name={settings.CLOUDINARY_CLOUD_NAME}, api_key={settings.CLOUDINARY_API_KEY[:4]}...")
+        logger.info(f"Cloudinary config: cloud_name={settings['cloud_name']}, api_key={settings['api_key'][:4] if settings['api_key'] else 'EMPTY'}...")
+        
+        if not settings['cloud_name'] or not settings['api_key'] or not settings['api_secret']:
+            return None, "Cloudinary credentials not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET environment variables."
         
         result = cloudinary.uploader.upload(
             file_content,
