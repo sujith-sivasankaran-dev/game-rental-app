@@ -3,12 +3,18 @@ import cloudinary.uploader
 from typing import Optional, Tuple
 import logging
 import os
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
 def _get_cloudinary_settings():
     """Get Cloudinary settings fresh from environment"""
+    # Try to reload .env in case it changed
+    load_dotenv(override=True)
     return {
         "cloud_name": os.getenv("CLOUDINARY_CLOUD_NAME", ""),
         "api_key": os.getenv("CLOUDINARY_API_KEY", ""),
