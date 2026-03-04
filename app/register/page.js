@@ -10,6 +10,9 @@ import Link from 'next/link';
 import { Gamepad2, UserPlus, Mail, Lock, User, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+// SS Gaming Logo URL
+const SS_GAMING_LOGO = "https://customer-assets.emergentagent.com/job_game-rent-platform/artifacts/l76gl32d_images.png";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
