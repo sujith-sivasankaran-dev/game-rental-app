@@ -2,12 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, s
 from backend.models.product import ProductCreate, ProductUpdate, ProductResponse, ProductWithHistory
 from backend.services.product_service import ProductService
 from backend.routes.auth import get_current_admin, get_current_user
-from backend.utils.cloudinary_helper import upload_image
+from backend.utils.cloudinary_helper import upload_image, get_cloudinary_config
 from typing import List, Optional
 from datetime import datetime
 import json
 
 router = APIRouter(prefix="/products", tags=["Products"])
+
+@router.get("/cloudinary-status")
+async def check_cloudinary_status():
+    """Debug endpoint to check Cloudinary configuration"""
+    config = get_cloudinary_config()
+    return {"status": "configured", "config": config}
 
 @router.post("", response_model=ProductResponse)
 async def create_product(
@@ -26,9 +32,15 @@ async def create_product(
     current_admin = Depends(get_current_admin)
 ):
     photo_url = None
-    if photo:
+    if photo and photo.filename:
         content = await photo.read()
-        photo_url = upload_image(content, f"product_{name.replace(' ', '_')}")
+        if len(content) > 0:
+            photo_url, error = upload_image(content, f"product_{name.replace(' ', '_')}")
+            if error:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Image upload failed: {error}"
+                )
     
     product_data = ProductCreate(
         name=name,
