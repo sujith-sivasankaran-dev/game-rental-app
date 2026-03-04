@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Clock, Package, Tag, ArrowLeft, ShoppingCart, CheckCircle, MapPin, Plus, Navigation } from 'lucide-react';
+import { Calendar, Clock, Package, Tag, ArrowLeft, ShoppingCart, CheckCircle, MapPin, Plus, Navigation, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
@@ -21,11 +21,13 @@ export default function BookingPage() {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [product, setProduct] = useState(null);
   const [user, setUser] = useState(null);
   const [addresses, setAddresses] = useState([]);
   const [isNewAddressDialogOpen, setIsNewAddressDialogOpen] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [availability, setAvailability] = useState(null);
   
   const [formData, setFormData] = useState({
     start_date: '',
@@ -68,6 +70,39 @@ export default function BookingPage() {
       calculatePrice();
     }
   }, [product, formData.rental_duration]);
+
+  // Check availability when dates change
+  useEffect(() => {
+    if (product && formData.start_date && formData.rental_duration) {
+      checkAvailability();
+    }
+  }, [formData.start_date, formData.rental_duration, product]);
+
+  const checkAvailability = async () => {
+    if (!formData.start_date || !product) return;
+    
+    setCheckingAvailability(true);
+    try {
+      const startDate = new Date(formData.start_date);
+      const durationHours = product.min_rental_unit === 'Hour' 
+        ? formData.rental_duration 
+        : formData.rental_duration * 24;
+      const endDate = new Date(startDate.getTime() + durationHours * 60 * 60 * 1000);
+      
+      const response = await fetch(
+        `/api/products/${productId}/availability?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAvailability(data);
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    } finally {
+      setCheckingAvailability(false);
+    }
+  };
 
   const fetchProduct = async () => {
     try {
