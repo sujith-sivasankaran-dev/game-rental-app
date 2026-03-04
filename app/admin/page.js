@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, Package, Users, AlertTriangle, TrendingUp, Activity, ArrowRight, Calendar, Filter, Download, Search, X } from 'lucide-react';
+import { DollarSign, Package, Users, TrendingUp, Activity, ArrowRight, Calendar, Filter, Download, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
