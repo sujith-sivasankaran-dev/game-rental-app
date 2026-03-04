@@ -130,10 +130,16 @@ async def update_product(
     if total_stock is not None: update_data["total_stock"] = total_stock
     if is_active is not None: update_data["is_active"] = is_active
     
-    if photo:
+    if photo and photo.filename:
         content = await photo.read()
-        photo_url = upload_image(content, f"product_{product_id}")
-        update_data["photo_url"] = photo_url
+        if len(content) > 0:
+            photo_url, error = upload_image(content, f"product_{product_id}")
+            if error:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Image upload failed: {error}"
+                )
+            update_data["photo_url"] = photo_url
     
     product_update = ProductUpdate(**update_data)
     product = await ProductService.update_product(product_id, product_update)
