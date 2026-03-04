@@ -278,7 +278,7 @@ export default function RootLayout({ children }) {
             <div className="container-custom">
               <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center justify-center sm:justify-start space-x-2">
-                  <Gamepad2 className="h-5 w-5 text-neon" />
+                  <img src={SS_GAMING_LOGO} alt="SS Gaming" className="h-6 w-6" />
                   <span className="text-white font-semibold text-sm sm:text-base">SS Gaming Rentals</span>
                 </div>
                 <div className="text-gray-500 text-xs sm:text-sm text-center order-last sm:order-none">
