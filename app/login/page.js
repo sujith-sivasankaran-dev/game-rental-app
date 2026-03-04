@@ -156,18 +156,6 @@ export default function LoginPage() {
                 </Button>
               </Link>
             </div>
-
-            {/* Demo Credentials - Collapsible on mobile */}
-            <details className="mt-6">
-              <summary className="cursor-pointer text-xs text-gray-500 text-center hover:text-gray-400 transition-colors">
-                View Demo Credentials
-              </summary>
-              <div className="mt-2 p-3 sm:p-4 glass-card rounded-lg">
-                <p className="text-xs sm:text-sm text-cyan-400 text-center font-mono">
-                  admin@ssgaming.com / admin123
-                </p>
-              </div>
-            </details>
           </CardContent>
         </Card>
         
