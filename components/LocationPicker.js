@@ -14,7 +14,7 @@ export default function LocationPicker({
   const markerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const autocompleteRef = useRef(null);
-  const [searchInput, setSearchInput] = useState('');
+  const inputRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -57,6 +57,12 @@ export default function LocationPicker({
         { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
         { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
       ],
+      // Mobile-friendly controls
+      zoomControl: true,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      gestureHandling: 'greedy', // Better for mobile
     });
 
     mapInstanceRef.current = map;
@@ -94,21 +100,25 @@ export default function LocationPicker({
       geocodeLatLng(position.lat(), position.lng());
     });
 
-    // Initialize autocomplete
-    const input = document.getElementById('location-search-input');
-    if (input) {
-      const autocomplete = new window.google.maps.places.Autocomplete(input, {
+    // Initialize autocomplete with the actual DOM input element
+    if (inputRef.current) {
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['geocode', 'establishment'],
       });
       autocomplete.bindTo('bounds', map);
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) return;
+        
+        if (!place.geometry || !place.geometry.location) {
+          console.log('No geometry for place');
+          return;
+        }
 
         const lat = place.geometry.location.lat();
         const lng = place.geometry.location.lng();
 
+        // Move map and marker to the selected place
         map.setCenter(place.geometry.location);
         map.setZoom(17);
         marker.setPosition(place.geometry.location);
@@ -116,19 +126,19 @@ export default function LocationPicker({
         const location = {
           latitude: lat,
           longitude: lng,
-          full_address: place.formatted_address || '',
+          full_address: place.formatted_address || place.name || '',
         };
+        
         setSelectedLocation(location);
-        setSearchInput(place.formatted_address || '');
         onLocationSelect?.(location);
       });
 
       autocompleteRef.current = autocomplete;
     }
 
-    // If initial location exists, set address
-    if (initialLocation?.full_address) {
-      setSearchInput(initialLocation.full_address);
+    // If initial location exists, set address in input
+    if (initialLocation?.full_address && inputRef.current) {
+      inputRef.current.value = initialLocation.full_address;
     }
 
   }, [isLoaded, initialLocation]);
@@ -144,7 +154,12 @@ export default function LocationPicker({
           full_address: address,
         };
         setSelectedLocation(location);
-        setSearchInput(address);
+        
+        // Update input field
+        if (inputRef.current) {
+          inputRef.current.value = address;
+        }
+        
         onLocationSelect?.(location);
       }
     });
@@ -179,7 +194,7 @@ export default function LocationPicker({
   if (!isLoaded) {
     return (
       <div 
-        className="flex items-center justify-center bg-gray-900 rounded-lg border border-white/10"
+        className="flex items-center justify-center bg-gray-900 rounded-lg border border-white/10 min-h-[200px] sm:min-h-[250px]"
         style={{ height }}
       >
         <div className="text-center space-y-2">
@@ -192,44 +207,43 @@ export default function LocationPicker({
 
   return (
     <div className="space-y-3">
-      {/* Search Input */}
-      <div className="flex gap-2">
+      {/* Search Input - Responsive */}
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            id="location-search-input"
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none z-10" />
+          <input
+            ref={inputRef}
             type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search for a location..."
-            className="pl-10 bg-black/50 border-white/10 text-white focus:border-cyan-500"
+            className="w-full h-10 sm:h-11 pl-10 pr-4 bg-black/50 border border-white/10 rounded-md text-white text-sm placeholder:text-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
           />
         </div>
         <Button
           type="button"
           variant="outline"
           onClick={getCurrentLocation}
-          className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+          className="h-10 sm:h-11 px-4 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 flex-shrink-0"
           title="Use current location"
         >
-          <Locate className="h-4 w-4" />
+          <Locate className="h-4 w-4 mr-2 sm:mr-0" />
+          <span className="sm:hidden">My Location</span>
         </Button>
       </div>
 
-      {/* Map */}
+      {/* Map - Responsive height */}
       <div 
         ref={mapRef}
-        className="rounded-lg border border-white/10 overflow-hidden"
-        style={{ height }}
+        className="rounded-lg border border-white/10 overflow-hidden w-full min-h-[200px] sm:min-h-[250px]"
+        style={{ height: 'clamp(200px, 40vw, 350px)' }}
       />
 
-      {/* Selected Location Display */}
+      {/* Selected Location Display - Responsive */}
       {selectedLocation && (
         <div className="flex items-start gap-2 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
           <MapPin className="h-5 w-5 text-cyan-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <p className="text-white text-sm font-medium">Selected Location</p>
-            <p className="text-gray-400 text-xs truncate">{selectedLocation.full_address}</p>
+            <p className="text-gray-400 text-xs break-words line-clamp-2">{selectedLocation.full_address}</p>
             <p className="text-gray-500 text-xs mt-1">
               {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
             </p>
