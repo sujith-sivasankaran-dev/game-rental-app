@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Query
 from backend.models.product import ProductCreate, ProductUpdate, ProductResponse, ProductWithHistory
 from backend.services.product_service import ProductService
 from backend.routes.auth import get_current_admin, get_current_user
 from backend.utils.cloudinary_helper import upload_image
 from typing import List, Optional
+from datetime import datetime
 import json
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -144,3 +145,31 @@ async def delete_product(
             detail="Product not found"
         )
     return {"message": "Product deleted successfully"}
+
+@router.get("/{product_id}/availability")
+async def check_product_availability(
+    product_id: str,
+    start_date: str = Query(..., description="Start date in ISO format (YYYY-MM-DDTHH:MM)"),
+    end_date: str = Query(..., description="End date in ISO format (YYYY-MM-DDTHH:MM)")
+):
+    """
+    Check product availability for specific dates.
+    Returns available quantity based on existing bookings during that period.
+    """
+    try:
+        start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid date format. Use ISO format (YYYY-MM-DDTHH:MM)"
+        )
+    
+    if end <= start:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="End date must be after start date"
+        )
+    
+    availability = await ProductService.get_availability_for_dates(product_id, start, end)
+    return availability

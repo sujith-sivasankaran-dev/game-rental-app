@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Gamepad2, LogOut, User, Shield, Menu, X } from 'lucide-react';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,6 +15,35 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('checking');
+
+  // Health check on app load
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        const response = await fetch('/api/health', {
+          method: 'GET',
+          cache: 'no-store',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setBackendStatus(data.status);
+          console.log('✅ Backend connected:', data);
+        } else {
+          setBackendStatus('error');
+          console.error('❌ Backend health check failed');
+          toast.error('Unable to connect to server');
+        }
+      } catch (error) {
+        setBackendStatus('error');
+        console.error('❌ Backend unreachable:', error);
+        toast.error('Server is unreachable. Please try again later.');
+      }
+    };
+
+    checkBackendHealth();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');

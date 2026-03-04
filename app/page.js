@@ -199,12 +199,13 @@ export default function HomePage() {
 
                     {/* Stock */}
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Availability</span>
+                      <span className="text-gray-400">Total Units</span>
                       <div className="flex items-center space-x-2">
-                        <div className={`h-2 w-2 rounded-full ${product.available_stock > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                        <span className="text-white font-medium">{product.available_stock} in stock</span>
+                        <div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse" />
+                        <span className="text-white font-medium">{product.total_stock} available</span>
                       </div>
                     </div>
+                    <p className="text-gray-500 text-xs mt-1">Check dates for availability</p>
                   </div>
                 </CardContent>
 

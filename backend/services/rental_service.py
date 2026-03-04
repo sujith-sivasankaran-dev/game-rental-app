@@ -77,8 +77,8 @@ class RentalService:
                 discount_amount
             )
         
-        # Update stock
-        await ProductService.update_stock(rental_data.product_id, -1)
+        # Note: Stock is no longer decremented permanently
+        # Availability is calculated dynamically based on overlapping bookings
         
         return await RentalService._format_rental_response(rental_dict)
     
@@ -184,7 +184,8 @@ class RentalService:
     @staticmethod
     async def complete_rental(rental_id: str) -> bool:
         """
-        Mark rental as completed and restore stock
+        Mark rental as completed
+        Note: Stock is no longer restored as availability is calculated dynamically
         """
         rentals_collection = db.get_db()["rentals"]
         
@@ -197,7 +198,7 @@ class RentalService:
             {"$set": {"status": "completed", "updated_at": datetime.utcnow()}}
         )
         
-        # Restore stock
-        await ProductService.update_stock(rental["product_id"], 1)
+        # Note: No need to restore stock - availability is calculated dynamically
+        # based on active/extended rentals that overlap with requested dates
         
         return True

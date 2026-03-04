@@ -119,7 +119,8 @@ class ProductService:
     @staticmethod
     async def check_availability(product_id: str, start_date: datetime, end_date: datetime, quantity: int = 1) -> bool:
         """
-        Check if product is available for the given time period
+        Check if product is available for the given time period.
+        Availability is date-based - counts how many units are booked during the period.
         """
         products_collection = db.get_db()["products"]
         rentals_collection = db.get_db()["rentals"]
@@ -128,26 +129,78 @@ class ProductService:
         if not product or not product.get("is_active", False):
             return False
         
+        # Count overlapping rentals (active or extended that overlap with requested period)
+        overlapping_rentals = await rentals_collection.count_documents({
+            "product_id": product_id,
+            "status": {"$in": ["active", "extended"]},
+            "$or": [
+                # Rental starts before requested end AND ends after requested start
+                {
+                    "start_date": {"$lt": end_date},
+                    "end_date": {"$gt": start_date},
+                    "extended_end_date": None
+                },
+                # For extended rentals, check extended_end_date
+                {
+                    "start_date": {"$lt": end_date},
+                    "extended_end_date": {"$gt": start_date}
+                }
+            ]
+        })
+        
+        # Available = Total Stock - Units booked during this period
+        available = product["total_stock"] - overlapping_rentals
+        return available >= quantity
+    
+    @staticmethod
+    async def get_availability_for_dates(product_id: str, start_date: datetime, end_date: datetime) -> dict:
+        """
+        Get detailed availability info for a product during a date range.
+        Returns available quantity and booking details.
+        """
+        products_collection = db.get_db()["products"]
+        rentals_collection = db.get_db()["rentals"]
+        
+        product = await products_collection.find_one({"id": product_id})
+        if not product:
+            return {"available": False, "quantity": 0, "total_stock": 0, "message": "Product not found"}
+        
+        if not product.get("is_active", False):
+            return {"available": False, "quantity": 0, "total_stock": product["total_stock"], "message": "Product is not active"}
+        
         # Count overlapping rentals
         overlapping_rentals = await rentals_collection.count_documents({
             "product_id": product_id,
             "status": {"$in": ["active", "extended"]},
             "$or": [
-                {"start_date": {"$lte": end_date}, "end_date": {"$gte": start_date}},
-                {"start_date": {"$lte": end_date}, "extended_end_date": {"$gte": start_date}}
+                {
+                    "start_date": {"$lt": end_date},
+                    "end_date": {"$gt": start_date},
+                    "extended_end_date": None
+                },
+                {
+                    "start_date": {"$lt": end_date},
+                    "extended_end_date": {"$gt": start_date}
+                }
             ]
         })
         
-        available = product["available_stock"] - overlapping_rentals
-        return available >= quantity
+        available_quantity = product["total_stock"] - overlapping_rentals
+        
+        return {
+            "available": available_quantity > 0,
+            "quantity": max(0, available_quantity),
+            "total_stock": product["total_stock"],
+            "booked_units": overlapping_rentals,
+            "message": "Available" if available_quantity > 0 else "Fully booked for selected dates"
+        }
     
     @staticmethod
     async def update_stock(product_id: str, quantity_change: int):
         """
         Update available stock (atomic operation)
+        NOTE: This is now deprecated - availability is calculated dynamically based on bookings
         """
-        products_collection = db.get_db()["products"]
-        await products_collection.update_one(
-            {"id": product_id},
-            {"$inc": {"available_stock": quantity_change}}
-        )
+        # Keeping this method for backwards compatibility but it's no longer needed
+        # as availability is now calculated based on overlapping rentals
+        pass

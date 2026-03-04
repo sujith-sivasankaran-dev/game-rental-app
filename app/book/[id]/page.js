@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Clock, Package, Tag, ArrowLeft, ShoppingCart, CheckCircle, MapPin, Plus, Navigation } from 'lucide-react';
+import { Calendar, Clock, Package, Tag, ArrowLeft, ShoppingCart, CheckCircle, MapPin, Plus, Navigation, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
@@ -21,11 +21,13 @@ export default function BookingPage() {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [product, setProduct] = useState(null);
   const [user, setUser] = useState(null);
   const [addresses, setAddresses] = useState([]);
   const [isNewAddressDialogOpen, setIsNewAddressDialogOpen] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [availability, setAvailability] = useState(null);
   
   const [formData, setFormData] = useState({
     start_date: '',
@@ -68,6 +70,39 @@ export default function BookingPage() {
       calculatePrice();
     }
   }, [product, formData.rental_duration]);
+
+  // Check availability when dates change
+  useEffect(() => {
+    if (product && formData.start_date && formData.rental_duration) {
+      checkAvailability();
+    }
+  }, [formData.start_date, formData.rental_duration, product]);
+
+  const checkAvailability = async () => {
+    if (!formData.start_date || !product) return;
+    
+    setCheckingAvailability(true);
+    try {
+      const startDate = new Date(formData.start_date);
+      const durationHours = product.min_rental_unit === 'Hour' 
+        ? formData.rental_duration 
+        : formData.rental_duration * 24;
+      const endDate = new Date(startDate.getTime() + durationHours * 60 * 60 * 1000);
+      
+      const response = await fetch(
+        `/api/products/${productId}/availability?start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAvailability(data);
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    } finally {
+      setCheckingAvailability(false);
+    }
+  };
 
   const fetchProduct = async () => {
     try {
@@ -225,8 +260,8 @@ export default function BookingPage() {
       return;
     }
 
-    if (product.available_stock < 1) {
-      toast.error('This product is currently out of stock');
+    if (!availability?.available) {
+      toast.error('Product is not available for the selected dates');
       return;
     }
 
@@ -325,13 +360,48 @@ export default function BookingPage() {
                       {product.product_type} • {product.compatibility}
                     </CardDescription>
                   </div>
-                  <Badge className={product.available_stock > 0 ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'}>
-                    {product.available_stock > 0 ? `${product.available_stock} Available` : 'Out of Stock'}
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50">
+                    {product.total_stock} Total Units
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-400">{product.description}</p>
+                
+                {/* Date-based Availability Display */}
+                {availability && (
+                  <div className={`p-4 rounded-lg border ${availability.available 
+                    ? 'bg-green-500/10 border-green-500/30' 
+                    : 'bg-red-500/10 border-red-500/30'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      {availability.available ? (
+                        <CheckCircle className="h-5 w-5 text-green-400" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      )}
+                      <span className={`font-semibold ${availability.available ? 'text-green-400' : 'text-red-400'}`}>
+                        {availability.message}
+                      </span>
+                    </div>
+                    <p className="text-gray-400 text-sm">
+                      {availability.quantity} of {availability.total_stock} units available for selected dates
+                    </p>
+                    {availability.booked_units > 0 && (
+                      <p className="text-gray-500 text-xs mt-1">
+                        ({availability.booked_units} already booked during this period)
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {checkingAvailability && (
+                  <div className="p-4 rounded-lg border border-white/10 bg-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent"></div>
+                      <span className="text-gray-400 text-sm">Checking availability...</span>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
                   <div className="space-y-1">
@@ -489,12 +559,27 @@ export default function BookingPage() {
                   <Button 
                     type="submit" 
                     className="w-full btn-gaming h-12 text-lg"
-                    disabled={submitting || product.available_stock < 1 || !selectedAddressId}
+                    disabled={submitting || !selectedAddressId || !availability?.available || checkingAvailability}
                   >
                     {submitting ? (
                       <>
                         <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                         Processing...
+                      </>
+                    ) : !formData.start_date ? (
+                      <>
+                        <Calendar className="mr-2 h-5 w-5" />
+                        Select Dates First
+                      </>
+                    ) : checkingAvailability ? (
+                      <>
+                        <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Checking Availability...
+                      </>
+                    ) : !availability?.available ? (
+                      <>
+                        <AlertCircle className="mr-2 h-5 w-5" />
+                        Not Available for Selected Dates
                       </>
                     ) : (
                       <>
