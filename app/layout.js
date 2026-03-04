@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, LogOut, User, Shield, Menu, X } from 'lucide-react';
+import { Gamepad2, LogOut, User, Shield, Menu, X, Home, ShoppingBag, Settings } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -16,6 +16,16 @@ export default function RootLayout({ children }) {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [backendStatus, setBackendStatus] = useState('checking');
+  const [scrolled, setScrolled] = useState(false);
+
+  // Track scroll for header styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Health check on app load
   useEffect(() => {
@@ -33,12 +43,10 @@ export default function RootLayout({ children }) {
         } else {
           setBackendStatus('error');
           console.error('❌ Backend health check failed');
-          toast.error('Unable to connect to server');
         }
       } catch (error) {
         setBackendStatus('error');
         console.error('❌ Backend unreachable:', error);
-        toast.error('Server is unreachable. Please try again later.');
       }
     };
 
@@ -53,6 +61,11 @@ export default function RootLayout({ children }) {
     }
   }, [pathname]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -60,41 +73,60 @@ export default function RootLayout({ children }) {
     window.location.href = '/';
   };
 
+  const isActive = (path) => pathname === path;
+
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
-        <div className="min-h-screen bg-black">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#000000" />
+      </head>
+      <body className={`${inter.className} overflow-x-hidden`}>
+        <div className="min-h-screen bg-black flex flex-col">
           {/* Header */}
-          <header className="sticky top-0 z-50 glass-card border-b border-white/5">
-            <div className="container mx-auto px-4 lg:px-8">
-              <div className="flex h-16 lg:h-20 items-center justify-between">
+          <header 
+            className={`sticky top-0 z-50 transition-all duration-300 ${
+              scrolled 
+                ? 'bg-black/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/50' 
+                : 'bg-transparent border-b border-white/5'
+            }`}
+          >
+            <div className="container-custom">
+              <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center space-x-3 group">
+                <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0">
                   <div className="relative">
-                    <Gamepad2 className="h-8 w-8 lg:h-10 lg:w-10 text-neon transition-transform group-hover:scale-110" />
+                    <Gamepad2 className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 text-neon transition-transform group-hover:scale-110" />
                     <div className="absolute inset-0 blur-xl bg-cyan-500/30 group-hover:bg-cyan-500/50 transition-all" />
                   </div>
-                  <div className="hidden sm:block">
-                    <span className="text-xl lg:text-2xl font-bold text-gradient">
+                  <div className="hidden xs:block">
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gradient leading-tight">
                       SS GAMING
                     </span>
-                    <div className="text-xs text-gray-400 tracking-wider">RENTALS</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 tracking-widest uppercase">Rentals</div>
                   </div>
                 </Link>
 
                 {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+                <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
                   {user ? (
                     <>
                       {user.role !== 'admin' && (
                         <>
                           <Link href="/">
-                            <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
+                            <Button 
+                              variant="ghost" 
+                              className={`text-sm lg:text-base ${isActive('/') ? 'text-neon bg-white/5' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
+                            >
+                              <Home className="mr-2 h-4 w-4" />
                               Products
                             </Button>
                           </Link>
                           <Link href="/account">
-                            <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
+                            <Button 
+                              variant="ghost" 
+                              className={`text-sm lg:text-base ${isActive('/account') ? 'text-neon bg-white/5' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
+                            >
                               <User className="mr-2 h-4 w-4" />
                               Account
                             </Button>
@@ -103,31 +135,36 @@ export default function RootLayout({ children }) {
                       )}
                       {user.role === 'admin' && (
                         <Link href="/admin">
-                          <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
+                          <Button 
+                            variant="ghost" 
+                            className={`text-sm lg:text-base ${pathname.startsWith('/admin') ? 'text-neon bg-white/5' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
+                          >
                             <Shield className="mr-2 h-4 w-4" />
-                            Admin Dashboard
+                            Dashboard
                           </Button>
                         </Link>
                       )}
+                      <div className="w-px h-6 bg-white/10 mx-2" />
                       <Button
                         onClick={handleLogout}
-                        variant="outline"
-                        className="border-white/10 text-white hover:border-neon hover:text-neon hover:bg-white/5"
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-red-400 hover:bg-red-500/10"
                       >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
+                        <LogOut className="h-4 w-4" />
+                        <span className="ml-2 hidden lg:inline">Logout</span>
                       </Button>
                     </>
                   ) : (
                     <>
                       <Link href="/login">
-                        <Button variant="ghost" className="text-white hover:text-neon hover:bg-white/5">
+                        <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/5">
                           Login
                         </Button>
                       </Link>
                       <Link href="/register">
-                        <Button className="btn-gaming">
-                          Sign Up
+                        <Button className="btn-gaming text-sm">
+                          Get Started
                         </Button>
                       </Link>
                     </>
@@ -137,89 +174,116 @@ export default function RootLayout({ children }) {
                 {/* Mobile Menu Button */}
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="md:hidden text-white hover:text-neon p-2"
+                  className="md:hidden text-white p-2 -mr-2 rounded-lg hover:bg-white/5 active:bg-white/10 transition-colors"
+                  aria-label="Toggle menu"
                 >
                   {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
               </div>
+            </div>
 
-              {/* Mobile Navigation */}
-              {mobileMenuOpen && (
-                <div className="md:hidden py-4 space-y-2 border-t border-white/5">
+            {/* Mobile Navigation - Full Screen Overlay */}
+            {mobileMenuOpen && (
+              <div className="md:hidden fixed inset-0 top-14 sm:top-16 bg-black/98 backdrop-blur-xl z-40 mobile-menu-enter">
+                <div className="container-custom py-6 space-y-2">
                   {user ? (
                     <>
                       {user.role !== 'admin' && (
                         <>
                           <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
-                              Products
-                            </Button>
+                            <div className={`flex items-center space-x-3 p-4 rounded-xl transition-colors ${
+                              isActive('/') ? 'bg-cyan-500/10 text-neon' : 'text-white hover:bg-white/5'
+                            }`}>
+                              <Home className="h-5 w-5" />
+                              <span className="text-lg font-medium">Products</span>
+                            </div>
                           </Link>
                           <Link href="/account" onClick={() => setMobileMenuOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
-                              <User className="mr-2 h-4 w-4" />
-                              Account
-                            </Button>
+                            <div className={`flex items-center space-x-3 p-4 rounded-xl transition-colors ${
+                              isActive('/account') ? 'bg-cyan-500/10 text-neon' : 'text-white hover:bg-white/5'
+                            }`}>
+                              <User className="h-5 w-5" />
+                              <span className="text-lg font-medium">My Account</span>
+                            </div>
                           </Link>
                         </>
                       )}
                       {user.role === 'admin' && (
                         <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
-                          <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Admin Dashboard
-                          </Button>
+                          <div className={`flex items-center space-x-3 p-4 rounded-xl transition-colors ${
+                            pathname.startsWith('/admin') ? 'bg-cyan-500/10 text-neon' : 'text-white hover:bg-white/5'
+                          }`}>
+                            <Shield className="h-5 w-5" />
+                            <span className="text-lg font-medium">Admin Dashboard</span>
+                          </div>
                         </Link>
                       )}
-                      <Button
+                      
+                      <div className="h-px bg-white/10 my-4" />
+                      
+                      <button
                         onClick={() => {
                           handleLogout();
                           setMobileMenuOpen(false);
                         }}
-                        variant="outline"
-                        className="w-full justify-start border-white/10 text-white hover:border-neon hover:text-neon"
+                        className="flex items-center space-x-3 p-4 rounded-xl text-red-400 hover:bg-red-500/10 w-full transition-colors"
                       >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
-                      </Button>
+                        <LogOut className="h-5 w-5" />
+                        <span className="text-lg font-medium">Logout</span>
+                      </button>
+                      
+                      {/* User Info */}
+                      <div className="mt-6 p-4 glass-card rounded-xl">
+                        <p className="text-gray-400 text-sm">Logged in as</p>
+                        <p className="text-white font-medium truncate">{user.email}</p>
+                      </div>
                     </>
                   ) : (
                     <>
                       <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:text-neon hover:bg-white/5">
-                          Login
-                        </Button>
+                        <div className="flex items-center space-x-3 p-4 rounded-xl text-white hover:bg-white/5 transition-colors">
+                          <User className="h-5 w-5" />
+                          <span className="text-lg font-medium">Login</span>
+                        </div>
                       </Link>
                       <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                        <Button className="w-full btn-gaming">
-                          Sign Up
+                        <Button className="w-full btn-gaming h-14 text-lg mt-4">
+                          Create Account
                         </Button>
                       </Link>
                     </>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </header>
 
           {/* Main Content */}
-          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+          <main className="flex-1">{children}</main>
 
           {/* Toaster for notifications */}
-          <Toaster position="top-right" richColors theme="dark" />
+          <Toaster 
+            position="top-center" 
+            richColors 
+            theme="dark" 
+            toastOptions={{
+              className: 'text-sm',
+              duration: 4000,
+            }}
+          />
 
           {/* Footer */}
-          <footer className="glass-card border-t border-white/5 py-8 mt-20">
-            <div className="container mx-auto px-4 lg:px-8">
-              <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-                <div className="flex items-center space-x-2">
+          <footer className="border-t border-white/5 py-6 sm:py-8 mt-auto bg-gradient-to-t from-gray-900/50 to-transparent">
+            <div className="container-custom">
+              <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center justify-center sm:justify-start space-x-2">
                   <Gamepad2 className="h-5 w-5 text-neon" />
-                  <span className="text-white font-semibold">SS Gaming Rentals</span>
+                  <span className="text-white font-semibold text-sm sm:text-base">SS Gaming Rentals</span>
                 </div>
-                <div className="text-gray-400 text-sm text-center md:text-left">
+                <div className="text-gray-500 text-xs sm:text-sm text-center order-last sm:order-none">
                   © 2025 SS Gaming Rentals. All rights reserved.
                 </div>
-                <div className="flex space-x-4 text-sm text-gray-400">
+                <div className="flex justify-center space-x-6 text-xs sm:text-sm text-gray-400">
                   <a href="#" className="hover:text-neon transition-colors">Terms</a>
                   <a href="#" className="hover:text-neon transition-colors">Privacy</a>
                   <a href="#" className="hover:text-neon transition-colors">Support</a>
