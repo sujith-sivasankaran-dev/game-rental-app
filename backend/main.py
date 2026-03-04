@@ -68,6 +68,24 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+# API Health Check (for frontend)
+@app.get("/api/health")
+async def api_health_check():
+    try:
+        # Check database connection
+        await db.get_db().command("ping")
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "version": "1.0.0"
+        }
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "database": "disconnected",
+            "error": str(e)
+        }
+
 # Global Exception Handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
