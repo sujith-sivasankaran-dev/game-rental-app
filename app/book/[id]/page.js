@@ -559,12 +559,27 @@ export default function BookingPage() {
                   <Button 
                     type="submit" 
                     className="w-full btn-gaming h-12 text-lg"
-                    disabled={submitting || product.available_stock < 1 || !selectedAddressId}
+                    disabled={submitting || !selectedAddressId || !availability?.available || checkingAvailability}
                   >
                     {submitting ? (
                       <>
                         <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                         Processing...
+                      </>
+                    ) : !formData.start_date ? (
+                      <>
+                        <Calendar className="mr-2 h-5 w-5" />
+                        Select Dates First
+                      </>
+                    ) : checkingAvailability ? (
+                      <>
+                        <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Checking Availability...
+                      </>
+                    ) : !availability?.available ? (
+                      <>
+                        <AlertCircle className="mr-2 h-5 w-5" />
+                        Not Available for Selected Dates
                       </>
                     ) : (
                       <>
