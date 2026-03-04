@@ -71,6 +71,7 @@ def delete_image(public_id: str) -> bool:
     Delete image from Cloudinary
     """
     try:
+        _configure_cloudinary()  # Ensure fresh config
         result = cloudinary.uploader.destroy(public_id)
         return result.get("result") == "ok"
     except Exception as e:
