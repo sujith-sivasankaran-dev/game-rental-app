@@ -114,7 +114,7 @@ The `.env` file is already configured with:
 ```env
 MONGO_URL=mongodb://localhost:27017
 DB_NAME=ss_gaming_rentals
-NEXT_PUBLIC_BASE_URL=https://game-console-mgmt.preview.emergentagent.com
+NEXT_PUBLIC_BASE_URL=https://game-rent-platform.preview.emergentagent.com
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 CORS_ORIGINS=*
 
