@@ -260,8 +260,8 @@ export default function BookingPage() {
       return;
     }
 
-    if (product.available_stock < 1) {
-      toast.error('This product is currently out of stock');
+    if (!availability?.available) {
+      toast.error('Product is not available for the selected dates');
       return;
     }
 
