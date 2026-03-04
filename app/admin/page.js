@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, Package, Users, AlertTriangle, TrendingUp, Activity, ArrowRight, Calendar, Filter, Download, Search, X } from 'lucide-react';
+import { DollarSign, Package, Users, TrendingUp, Activity, ArrowRight, Calendar, Filter, Download, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -294,45 +294,8 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Alerts Section */}
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
-          {/* Low Stock Alerts */}
-          <Link href="/admin/low-stock">
-            <Card className="gaming-card cursor-pointer group h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <AlertTriangle className="h-5 w-5 text-yellow-400" />
-                    <CardTitle className="text-white group-hover:text-neon transition-colors">Low Stock Alerts</CardTitle>
-                  </div>
-                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                    {metrics?.low_stock_alerts?.length || 0}
-                  </Badge>
-                </div>
-                <CardDescription className="text-gray-400">
-                  Products with less than 2 items in stock
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {metrics?.low_stock_alerts?.length > 0 ? (
-                  <div className="space-y-2">
-                    {metrics.low_stock_alerts.slice(0, 3).map((product) => (
-                      <div key={product.id} className="flex justify-between items-center text-sm">
-                        <span className="text-gray-300">{product.name}</span>
-                        <span className="text-yellow-400 font-bold">{product.available_stock}</span>
-                      </div>
-                    ))}
-                    {metrics.low_stock_alerts.length > 3 && (
-                      <p className="text-cyan-400 text-sm">+{metrics.low_stock_alerts.length - 3} more...</p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">All products have sufficient stock</p>
-                )}
-              </CardContent>
-            </Card>
-          </Link>
-
+        {/* Upcoming Returns Section */}
+        <div className="mb-8">
           {/* Upcoming Returns */}
           <Link href="/admin/upcoming-returns">
             <Card className="gaming-card cursor-pointer group h-full">

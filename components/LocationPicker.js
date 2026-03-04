@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Search, Locate } from 'lucide-react';
 
@@ -17,6 +16,12 @@ export default function LocationPicker({
   const inputRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
   const [isLoaded, setIsLoaded] = useState(false);
+  const onLocationSelectRef = useRef(onLocationSelect);
+
+  // Keep the callback ref updated
+  useEffect(() => {
+    onLocationSelectRef.current = onLocationSelect;
+  }, [onLocationSelect]);
 
   // Load Google Maps Script
   useEffect(() => {
@@ -29,7 +34,13 @@ export default function LocationPicker({
     script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
     script.async = true;
     script.defer = true;
-    script.onload = () => setIsLoaded(true);
+    script.onload = () => {
+      console.log('Google Maps loaded');
+      setIsLoaded(true);
+    };
+    script.onerror = () => {
+      console.error('Failed to load Google Maps');
+    };
     document.head.appendChild(script);
 
     return () => {
@@ -37,14 +48,42 @@ export default function LocationPicker({
     };
   }, []);
 
+  // Geocode function
+  const geocodeLatLng = useCallback((lat, lng) => {
+    if (!window.google?.maps) return;
+    
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const address = results[0].formatted_address;
+        const location = {
+          latitude: lat,
+          longitude: lng,
+          full_address: address,
+        };
+        setSelectedLocation(location);
+        
+        // Update input field
+        if (inputRef.current) {
+          inputRef.current.value = address;
+        }
+        
+        onLocationSelectRef.current?.(location);
+      }
+    });
+  }, []);
+
   // Initialize map
   useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
+    if (!isLoaded || !mapRef.current || !inputRef.current) return;
+
+    console.log('Initializing map...');
 
     const defaultCenter = initialLocation 
       ? { lat: initialLocation.latitude, lng: initialLocation.longitude }
       : { lat: 12.9716, lng: 77.5946 }; // Default to Bangalore
 
+    // Create map
     const map = new window.google.maps.Map(mapRef.current, {
       center: defaultCenter,
       zoom: 15,
@@ -57,17 +96,16 @@ export default function LocationPicker({
         { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
         { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
       ],
-      // Mobile-friendly controls
       zoomControl: true,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      gestureHandling: 'greedy', // Better for mobile
+      gestureHandling: 'greedy',
     });
 
     mapInstanceRef.current = map;
 
-    // Add marker
+    // Create marker
     const marker = new window.google.maps.Marker({
       position: defaultCenter,
       map: map,
@@ -97,73 +135,80 @@ export default function LocationPicker({
     // Drag marker
     marker.addListener('dragend', () => {
       const position = marker.getPosition();
-      geocodeLatLng(position.lat(), position.lng());
+      if (position) {
+        geocodeLatLng(position.lat(), position.lng());
+      }
     });
 
-    // Initialize autocomplete with the actual DOM input element
-    if (inputRef.current) {
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ['geocode', 'establishment'],
-      });
-      autocomplete.bindTo('bounds', map);
+    // Initialize autocomplete
+    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+      types: ['geocode', 'establishment'],
+    });
+    
+    autocomplete.bindTo('bounds', map);
+    autocompleteRef.current = autocomplete;
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
+    // Handle place selection - Use closure properly
+    const handlePlaceChanged = () => {
+      console.log('Place changed event fired');
+      const place = autocomplete.getPlace();
+      
+      console.log('Selected place:', place);
+      
+      if (!place.geometry || !place.geometry.location) {
+        console.log('No geometry for selected place');
+        return;
+      }
+
+      const location = place.geometry.location;
+      const lat = location.lat();
+      const lng = location.lng();
+
+      console.log('Moving to coordinates:', lat, lng);
+
+      // Use refs to get current map and marker instances
+      const currentMap = mapInstanceRef.current;
+      const currentMarker = markerRef.current;
+
+      if (currentMap && currentMarker) {
+        // Pan and zoom to the selected place
+        currentMap.panTo(location);
+        currentMap.setZoom(17);
         
-        if (!place.geometry || !place.geometry.location) {
-          console.log('No geometry for place');
-          return;
-        }
+        // Move the marker
+        currentMarker.setPosition(location);
 
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
+        console.log('Map and marker updated');
 
-        // Move map and marker to the selected place
-        map.setCenter(place.geometry.location);
-        map.setZoom(17);
-        marker.setPosition(place.geometry.location);
-
-        const location = {
+        const locationData = {
           latitude: lat,
           longitude: lng,
           full_address: place.formatted_address || place.name || '',
         };
         
-        setSelectedLocation(location);
-        onLocationSelect?.(location);
-      });
+        setSelectedLocation(locationData);
+        onLocationSelectRef.current?.(locationData);
+      } else {
+        console.error('Map or marker ref is null');
+      }
+    };
 
-      autocompleteRef.current = autocomplete;
-    }
+    autocomplete.addListener('place_changed', handlePlaceChanged);
 
-    // If initial location exists, set address in input
+    // Set initial address if provided
     if (initialLocation?.full_address && inputRef.current) {
       inputRef.current.value = initialLocation.full_address;
     }
 
-  }, [isLoaded, initialLocation]);
+    console.log('Map initialization complete');
 
-  const geocodeLatLng = useCallback((lat, lng) => {
-    const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-      if (status === 'OK' && results[0]) {
-        const address = results[0].formatted_address;
-        const location = {
-          latitude: lat,
-          longitude: lng,
-          full_address: address,
-        };
-        setSelectedLocation(location);
-        
-        // Update input field
-        if (inputRef.current) {
-          inputRef.current.value = address;
-        }
-        
-        onLocationSelect?.(location);
+    // Cleanup
+    return () => {
+      if (autocompleteRef.current) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
       }
-    });
-  }, [onLocationSelect]);
+    };
+  }, [isLoaded, initialLocation, geocodeLatLng]);
 
   const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -176,11 +221,14 @@ export default function LocationPicker({
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
-        if (mapInstanceRef.current && markerRef.current) {
+        const currentMap = mapInstanceRef.current;
+        const currentMarker = markerRef.current;
+
+        if (currentMap && currentMarker) {
           const pos = new window.google.maps.LatLng(lat, lng);
-          mapInstanceRef.current.setCenter(pos);
-          mapInstanceRef.current.setZoom(17);
-          markerRef.current.setPosition(pos);
+          currentMap.panTo(pos);
+          currentMap.setZoom(17);
+          currentMarker.setPosition(pos);
           geocodeLatLng(lat, lng);
         }
       },
@@ -216,6 +264,7 @@ export default function LocationPicker({
             type="text"
             placeholder="Search for a location..."
             className="w-full h-10 sm:h-11 pl-10 pr-4 bg-black/50 border border-white/10 rounded-md text-white text-sm placeholder:text-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+            autoComplete="off"
           />
         </div>
         <Button
