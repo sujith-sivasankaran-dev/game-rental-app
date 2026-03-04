@@ -1,26 +1,38 @@
 import cloudinary
 import cloudinary.uploader
-from backend.config import settings
 from typing import Optional, Tuple
 import logging
+import os
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Configure Cloudinary
-cloudinary.config(
-    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
-    api_key=settings.CLOUDINARY_API_KEY,
-    api_secret=settings.CLOUDINARY_API_SECRET
-)
+def _get_cloudinary_settings():
+    """Get Cloudinary settings fresh from environment"""
+    return {
+        "cloud_name": os.getenv("CLOUDINARY_CLOUD_NAME", ""),
+        "api_key": os.getenv("CLOUDINARY_API_KEY", ""),
+        "api_secret": os.getenv("CLOUDINARY_API_SECRET", "")
+    }
+
+def _configure_cloudinary():
+    """Configure Cloudinary with fresh environment variables"""
+    settings = _get_cloudinary_settings()
+    cloudinary.config(
+        cloud_name=settings["cloud_name"],
+        api_key=settings["api_key"],
+        api_secret=settings["api_secret"]
+    )
+    return settings
 
 def get_cloudinary_config() -> dict:
     """Return current Cloudinary configuration (without exposing secrets)"""
+    settings = _get_cloudinary_settings()
     return {
-        "cloud_name": settings.CLOUDINARY_CLOUD_NAME,
-        "api_key_set": bool(settings.CLOUDINARY_API_KEY),
-        "api_secret_set": bool(settings.CLOUDINARY_API_SECRET),
-        "api_key_preview": settings.CLOUDINARY_API_KEY[:4] + "..." if settings.CLOUDINARY_API_KEY else "NOT SET"
+        "cloud_name": settings["cloud_name"],
+        "api_key_set": bool(settings["api_key"]),
+        "api_secret_set": bool(settings["api_secret"]),
+        "api_key_preview": settings["api_key"][:4] + "..." if settings["api_key"] else "NOT SET"
     }
 
 def upload_image(file_content: bytes, filename: str, folder: str = "ss_gaming_rentals") -> Tuple[Optional[str], Optional[str]]:
