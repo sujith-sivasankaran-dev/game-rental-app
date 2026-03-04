@@ -77,8 +77,8 @@ class RentalService:
                 discount_amount
             )
         
-        # Update stock
-        await ProductService.update_stock(rental_data.product_id, -1)
+        # Note: Stock is no longer decremented permanently
+        # Availability is calculated dynamically based on overlapping bookings
         
         return await RentalService._format_rental_response(rental_dict)
     
