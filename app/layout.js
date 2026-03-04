@@ -8,6 +8,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Gamepad2, LogOut, User, Shield, Menu, X, Home, ShoppingBag, Settings } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
+import Image from 'next/image';
+
+// SS Gaming Logo URL
+const SS_GAMING_LOGO = "https://customer-assets.emergentagent.com/job_game-rent-platform/artifacts/l76gl32d_images.png";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -95,15 +99,12 @@ export default function RootLayout({ children }) {
               <div className="flex h-14 sm:h-16 lg:h-18 items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0">
-                  <div className="relative">
-                    <Gamepad2 className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 text-neon transition-transform group-hover:scale-110" />
-                    <div className="absolute inset-0 blur-xl bg-cyan-500/30 group-hover:bg-cyan-500/50 transition-all" />
-                  </div>
-                  <div className="hidden xs:block">
-                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gradient leading-tight">
-                      SS GAMING
-                    </span>
-                    <div className="text-[10px] sm:text-xs text-gray-500 tracking-widest uppercase">Rentals</div>
+                  <div className="relative h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14">
+                    <img 
+                      src={SS_GAMING_LOGO} 
+                      alt="SS Gaming" 
+                      className="h-full w-full object-contain transition-transform group-hover:scale-110"
+                    />
                   </div>
                 </Link>
 
@@ -277,7 +278,7 @@ export default function RootLayout({ children }) {
             <div className="container-custom">
               <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center justify-center sm:justify-start space-x-2">
-                  <Gamepad2 className="h-5 w-5 text-neon" />
+                  <img src={SS_GAMING_LOGO} alt="SS Gaming" className="h-6 w-6" />
                   <span className="text-white font-semibold text-sm sm:text-base">SS Gaming Rentals</span>
                 </div>
                 <div className="text-gray-500 text-xs sm:text-sm text-center order-last sm:order-none">

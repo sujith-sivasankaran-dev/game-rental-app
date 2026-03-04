@@ -10,6 +10,9 @@ import Link from 'next/link';
 import { Gamepad2, UserPlus, Mail, Lock, User, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+// SS Gaming Logo URL
+const SS_GAMING_LOGO = "https://customer-assets.emergentagent.com/job_game-rent-platform/artifacts/l76gl32d_images.png";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -61,9 +64,12 @@ export default function RegisterPage() {
         <Card className="gaming-card border-white/10">
           <CardHeader className="text-center space-y-4 sm:space-y-6 pb-4 sm:pb-6 px-4 sm:px-6">
             <div className="flex justify-center">
-              <div className="relative">
-                <Gamepad2 className="h-12 w-12 sm:h-16 sm:w-16 text-neon" />
-                <div className="absolute inset-0 blur-2xl bg-cyan-500/50" />
+              <div className="relative h-16 w-16 sm:h-20 sm:w-20">
+                <img 
+                  src={SS_GAMING_LOGO} 
+                  alt="SS Gaming" 
+                  className="h-full w-full object-contain"
+                />
               </div>
             </div>
             <div className="space-y-1 sm:space-y-2">
