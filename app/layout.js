@@ -8,6 +8,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Gamepad2, LogOut, User, Shield, Menu, X, Home, ShoppingBag, Settings } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
+import Image from 'next/image';
+
+// SS Gaming Logo URL
+const SS_GAMING_LOGO = "https://customer-assets.emergentagent.com/job_game-rent-platform/artifacts/l76gl32d_images.png";
 
 const inter = Inter({ subsets: ['latin'] });
 
